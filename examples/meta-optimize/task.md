@@ -6,27 +6,25 @@ rounds: 3
 timeout: 300
 ---
 
-You are optimizing the agent prompts for SwarmResearch — a multi-agent optimization framework.
+Optimize agent configurations for a multi-agent code optimization framework.
 
-The eval measures: how much improvement do agents achieve when optimizing a Python function for speed.
+The eval runs these agents on a Python speed optimization task and measures improvement.
 Higher score = agents find better optimizations.
 
-THE FILE CONTAINS:
-- 3 AgentConfig objects (name, strategy, temperature) defining agent personas
-- SYSTEM_PROMPT_TEMPLATE — the system prompt sent to each agent
-- USER_PROMPT_TEMPLATE — the user prompt with task/file/board/history
+The file defines 3 agents with: name, strategy (text), and temperature (0.0-1.0).
+The strategy text tells each agent HOW to approach optimization.
 
-WHAT TO OPTIMIZE:
-- Agent strategies — make them more effective at proposing good code changes
-- Temperatures — find the best creativity/precision balance
-- System prompt — better instructions for proposing and formatting changes
-- User prompt — better presentation of context, board, history
+WHAT TO TRY:
+- Rewrite strategies to be more specific about code optimization techniques
+- Adjust temperatures (higher = more creative, lower = more focused)
+- Change the number of agents or their roles
+- Add domain-specific hints (e.g. "use list comprehensions", "cache lookups", "use math module")
+- Make strategies more complementary (avoid overlap)
 
 CONSTRAINTS:
-- Keep the AgentConfig dataclass with fields: name, strategy, temperature
-- Keep the variable name AGENTS (list of 3 AgentConfig)
-- Keep SYSTEM_PROMPT_TEMPLATE and USER_PROMPT_TEMPLATE as strings
-- Keep all format placeholders: {agent_name}, {agent_strategy}, {failed_block},
-  {task_desc}, {target_name}, {target_content}, {board_summary}, {history_text}, {experiment_num}
-- Output format rule MUST stay: ```file markers for complete file content
-- Keep all imports
+- Keep the dataclass import and AgentConfig definition
+- Keep AGENTS as a list of AgentConfig objects
+- Each agent needs: name (str), strategy (str), temperature (float 0.0-1.0)
+- At least 2 agents required
+- Strategy text should be 1-3 sentences
+- No format placeholders or special characters needed — just plain text

@@ -84,8 +84,33 @@ def setup_test_env(tmpdir):
     return test_dir
 
 
+def validate_prompts(prompts_path):
+    """Check that agent_prompts.py is valid Python with required exports."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("test_prompts", prompts_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        # Check required attributes
+        assert hasattr(mod, "AGENTS"), "Missing AGENTS"
+        assert len(mod.AGENTS) >= 1, "AGENTS is empty"
+        for a in mod.AGENTS:
+            assert hasattr(a, "name") and hasattr(a, "strategy") and hasattr(a, "temperature"), \
+                f"AgentConfig missing fields: {a}"
+        return True, ""
+    except Exception as e:
+        return False, str(e)
+
+
 def run_swarm(test_dir):
     """Run the swarm engine and extract results."""
+    # Pre-validate agent_prompts.py
+    prompts_file = test_dir / "agent_prompts.py"
+    if prompts_file.exists():
+        valid, err = validate_prompts(prompts_file)
+        if not valid:
+            return None, None, 0, 0, f"agent_prompts.py validation failed: {err}"
+
     result = subprocess.run(
         [sys.executable, "run.py", "task.md", "--rounds", "1"],
         cwd=test_dir,

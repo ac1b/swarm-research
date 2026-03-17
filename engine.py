@@ -1,19 +1,29 @@
 """
-SwarmResearch Engine v0.2 — autonomous multi-agent optimization framework.
+SwarmResearch Engine v0.3
 
-A swarm of AI agents with different strategies collaboratively optimize
-any target file against a measurable metric.
+Autonomous multi-agent optimization framework.
+v0.3: diff mode, parallel agents, smarter exploration.
 """
 
 import json
 import os
 import re
 import subprocess
-import hashlib
+import random
+import shutil
+import threading
 from typing import Optional, List, Dict
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Load .env from engine's directory if available
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent / ".env")
+except ImportError:
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -31,7 +41,7 @@ class Finding:
     kept: bool
     reasoning: str
     description: str
-    change_summary: str  # what specifically was changed (for dedup)
+    change_summary: str
     timestamp: str
 
 
@@ -68,8 +78,8 @@ DEFAULT_AGENTS = [
 ]
 
 
-def load_agent_prompts(work_dir: Path):
-    """Try to load agent_prompts.py from work_dir or its parents. Returns module or None."""
+def load_agent_prompts(work_dir):
+    # type: (Path) -> Optional[object]
     for search_dir in [work_dir, work_dir.parent]:
         prompts_file = search_dir / "agent_prompts.py"
         if prompts_file.exists():
@@ -82,13 +92,15 @@ def load_agent_prompts(work_dir: Path):
 
 
 # ---------------------------------------------------------------------------
-# Board — shared knowledge between agents (v2: richer context)
+# Board — shared knowledge (thread-safe for parallel agents)
 # ---------------------------------------------------------------------------
 
 class Board:
-    def __init__(self, path: Path):
+    def __init__(self, path):
+        # type: (Path) -> None
         self.path = path
-        self.findings: List[Finding] = []
+        self.findings = []  # type: List[Finding]
+        self._lock = threading.Lock()
         if self.path.exists():
             try:
                 data = json.loads(self.path.read_text())
@@ -96,65 +108,69 @@ class Board:
             except (json.JSONDecodeError, TypeError):
                 self.findings = []
 
-    def add(self, finding: Finding):
-        self.findings.append(finding)
-        self.path.write_text(json.dumps([asdict(f) for f in self.findings], indent=2))
+    def add(self, finding):
+        # type: (Finding) -> None
+        with self._lock:
+            self.findings.append(finding)
+            self.path.write_text(json.dumps(
+                [asdict(f) for f in self.findings], indent=2, ensure_ascii=False
+            ))
 
-    def summary(self, last_n: int = 20) -> str:
+    def summary(self, last_n=20):
+        # type: (int) -> str
+        with self._lock:
+            return self._summary_unlocked(last_n)
+
+    def _summary_unlocked(self, last_n=20):
         if not self.findings:
             return "No experiments yet. You are the first — try something safe and informative."
 
-        recent = self.findings[-last_n:]
-        lines = []
-
-        # Group by status for clearer picture
         kept = [f for f in self.findings if f.kept]
         failed = [f for f in self.findings if not f.kept]
+        lines = []
 
         if kept:
             lines.append("=== KEPT (successful changes) ===")
             for f in kept:
                 lines.append(
                     f"  R{f.round} {f.agent}: {f.change_summary[:150]} "
-                    f"| score={f.score:.4f} (delta={f.delta:+.4f})"
+                    f"| score={f.score:.4f} (+{f.delta:.4f})"
                 )
 
         if failed:
-            lines.append("\n=== REVERTED (failed attempts — DO NOT repeat these) ===")
-            for f in failed[-10:]:  # last 10 failures
+            lines.append("\n=== REVERTED (DO NOT repeat) ===")
+            for f in failed[-8:]:
                 lines.append(
                     f"  R{f.round} {f.agent}: {f.change_summary[:150]} "
-                    f"| score={f.score:.4f} (delta={f.delta:+.4f})"
+                    f"| score={f.score:.4f} ({f.delta:+.4f})"
                 )
 
         if kept:
             best = max(kept, key=lambda f: f.delta)
             lines.append(
-                f"\nBest so far: {best.agent} R{best.round} "
+                f"\nBest: {best.agent} R{best.round} "
                 f"(score={best.score:.4f}, +{best.delta:.4f})"
             )
 
-        # Diversity hint
-        failed_summaries = [f.change_summary for f in failed]
-        if len(failed_summaries) >= 3:
+        if len(failed) >= 3:
             lines.append(
-                f"\n*** {len(failed_summaries)} experiments failed. "
-                f"Try a DIFFERENT approach than what's listed above. ***"
+                f"\n*** {len(failed)} failed. Try something DIFFERENT. ***"
             )
 
         return "\n".join(lines)
 
-    def failed_approaches(self) -> List[str]:
-        """Return summaries of failed approaches for dedup."""
-        return [f.change_summary for f in self.findings if not f.kept]
+    def failed_approaches(self):
+        # type: () -> List[str]
+        with self._lock:
+            return [f.change_summary for f in self.findings if not f.kept]
 
 
 # ---------------------------------------------------------------------------
 # Task parser
 # ---------------------------------------------------------------------------
 
-def parse_task(task_path: Path) -> dict:
-    """Parse task.md with YAML-like frontmatter."""
+def parse_task(task_path):
+    # type: (Path) -> dict
     text = task_path.read_text()
     config = {}
     body = text
@@ -173,19 +189,19 @@ def parse_task(task_path: Path) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Eval runner (v2: multiple runs + median for robustness)
+# Eval runner
 # ---------------------------------------------------------------------------
 
-def run_eval_once(eval_cmd: str, work_dir: Path, timeout: int = 300) -> Optional[float]:
-    """Run eval command once. Expects the LAST number in stdout to be the score."""
+def run_eval_once(eval_cmd, work_dir, timeout=300):
+    # type: (str, Path, int) -> Optional[float]
     try:
         result = subprocess.run(
             eval_cmd, shell=True, cwd=work_dir,
             capture_output=True, text=True, timeout=timeout,
         )
         if result.returncode != 0:
-            stderr_tail = result.stderr[-500:] if result.stderr else "(no stderr)"
-            print(f"    eval failed (exit {result.returncode}): {stderr_tail}")
+            stderr_tail = result.stderr[-500:] if result.stderr else ""
+            print(f"    eval error: {stderr_tail}")
             return None
 
         for line in reversed(result.stdout.strip().split("\n")):
@@ -193,19 +209,15 @@ def run_eval_once(eval_cmd: str, work_dir: Path, timeout: int = 300) -> Optional
             if match:
                 return float(match.group())
 
-        print("    no score found in eval output")
         return None
-
     except subprocess.TimeoutExpired:
-        print(f"    eval timed out ({timeout}s)")
         return None
 
 
-def run_eval(eval_cmd: str, work_dir: Path, timeout: int = 300,
-             runs: int = 1) -> Optional[float]:
-    """Run eval multiple times and return median (robust to outliers)."""
+def run_eval(eval_cmd, work_dir, timeout=300, runs=1):
+    # type: (str, Path, int, int) -> Optional[float]
     scores = []
-    for i in range(runs):
+    for _ in range(runs):
         s = run_eval_once(eval_cmd, work_dir, timeout)
         if s is not None:
             scores.append(s)
@@ -219,15 +231,15 @@ def run_eval(eval_cmd: str, work_dir: Path, timeout: int = 300,
 
 
 # ---------------------------------------------------------------------------
-# LLM client — supports anthropic and openai-compatible APIs
+# LLM client
 # ---------------------------------------------------------------------------
 
-def call_llm(messages: List[dict], temperature: float, max_tokens: int = 16000) -> str:
+def call_llm(messages, temperature, max_tokens=16000):
+    # type: (List[dict], float, int) -> str
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
 
     if provider == "anthropic":
         from anthropic import Anthropic
-
         client = Anthropic(api_key=os.environ["LLM_API_KEY"])
         system = ""
         user_msgs = []
@@ -236,56 +248,70 @@ def call_llm(messages: List[dict], temperature: float, max_tokens: int = 16000) 
                 system = m["content"]
             else:
                 user_msgs.append(m)
-
         resp = client.messages.create(
             model=os.environ.get("LLM_MODEL", "claude-sonnet-4-20250514"),
-            max_tokens=max_tokens,
-            system=system,
-            messages=user_msgs,
-            temperature=temperature,
+            max_tokens=max_tokens, system=system,
+            messages=user_msgs, temperature=temperature,
         )
         return resp.content[0].text
-
-    else:  # openai-compatible (kimi, minimax, openai, etc.)
+    else:
         from openai import OpenAI
-
         client = OpenAI(
             base_url=os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
             api_key=os.environ.get("LLM_API_KEY", ""),
         )
         resp = client.chat.completions.create(
             model=os.environ.get("LLM_MODEL", "gpt-4o-mini"),
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
+            messages=messages, temperature=temperature, max_tokens=max_tokens,
         )
         return resp.choices[0].message.content
 
 
 # ---------------------------------------------------------------------------
-# Agent prompt construction (v2: anti-repetition, diversity enforcement)
+# Prompt construction — v0.3: supports both full-file and diff mode
 # ---------------------------------------------------------------------------
 
-DEFAULT_SYSTEM_TEMPLATE = """You are {agent_name}, an AI research agent in a swarm optimization team.
+DIFF_SYSTEM_TEMPLATE = """You are {agent_name}, an AI research agent in a swarm optimization team.
 
 Your strategy: {agent_strategy}
 
-You modify a target file to improve a measurable score. After each change the file
-is evaluated automatically. If the score improves, your change is kept; otherwise it
-is reverted.
+You modify a target file to improve a measurable score. If the score improves, your
+change is kept; otherwise it is reverted.
 
-CRITICAL RULES:
-1. Output the COMPLETE modified file between ```file and ``` markers.
-2. Before the file content, write 2-3 sentences explaining:
-   - WHAT you changed (specific description for the board)
-   - WHY you expect it to improve the score
-3. Make exactly ONE conceptual change per experiment.
-4. NEVER repeat an approach that was already tried and failed (see board).
+RESPONSE FORMAT — use SEARCH/REPLACE blocks to describe changes:
+
+```diff
+<<<< SEARCH
+exact lines from the current file to find
+====
+replacement lines
+>>>> REPLACE
+```
+
+RULES:
+1. Write 2-3 sentences explaining WHAT you changed and WHY before the diff blocks.
+2. Make ONE conceptual change per experiment (can be multiple SEARCH/REPLACE blocks).
+3. SEARCH text must match the file EXACTLY (including whitespace and indentation).
+4. NEVER repeat failed approaches from the board.
 5. If many experiments failed — try something radically different.
-6. Keep the output clean: no extra commentary after the closing ``` markers.
 {failed_block}"""
 
-DEFAULT_USER_TEMPLATE = """## Task
+FULL_SYSTEM_TEMPLATE = """You are {agent_name}, an AI research agent in a swarm optimization team.
+
+Your strategy: {agent_strategy}
+
+You modify a target file to improve a measurable score. If the score improves, your
+change is kept; otherwise it is reverted.
+
+RULES:
+1. Output the COMPLETE modified file between ```file and ``` markers.
+2. Before the file, write 2-3 sentences explaining WHAT you changed and WHY.
+3. Make ONE conceptual change per experiment.
+4. NEVER repeat failed approaches from the board.
+5. If many experiments failed — try something radically different.
+{failed_block}"""
+
+USER_TEMPLATE = """## Task
 {task_desc}
 
 ## Current file: {target_name}
@@ -299,34 +325,27 @@ DEFAULT_USER_TEMPLATE = """## Task
 ## Your recent history
 {history_text}
 
-This is experiment #{experiment_num}. Propose your next change."""
+Experiment #{experiment_num}. Propose your next change."""
 
 
-def build_prompt(agent: AgentConfig, task_desc: str, target_content: str,
-                 target_name: str, board: Board,
-                 history: List[str], experiment_num: int,
-                 prompt_module=None) -> List[dict]:
+def build_prompt(agent, task_desc, target_content, target_name,
+                 board, history, experiment_num, use_diff=False):
+    # type: (AgentConfig, str, str, str, Board, List[str], int, bool) -> List[dict]
 
     failed_list = board.failed_approaches()
     failed_block = ""
     if failed_list:
-        failed_block = "\nDO NOT try these approaches (they already failed):\n" + \
-            "\n".join(f"- {a[:150]}" for a in failed_list[-10:])
+        failed_block = "\nDO NOT try these (already failed):\n" + \
+            "\n".join(f"- {a[:120]}" for a in failed_list[-8:])
 
-    sys_template = DEFAULT_SYSTEM_TEMPLATE
-    usr_template = DEFAULT_USER_TEMPLATE
-    if prompt_module:
-        sys_template = getattr(prompt_module, "SYSTEM_PROMPT_TEMPLATE", sys_template)
-        usr_template = getattr(prompt_module, "USER_PROMPT_TEMPLATE", usr_template)
-
+    sys_template = DIFF_SYSTEM_TEMPLATE if use_diff else FULL_SYSTEM_TEMPLATE
     system = sys_template.format(
         agent_name=agent.name, agent_strategy=agent.strategy,
         failed_block=failed_block,
     )
 
     history_text = "\n".join(history[-5:]) if history else "No history yet."
-
-    user = usr_template.format(
+    user = USER_TEMPLATE.format(
         task_desc=task_desc, target_name=target_name,
         target_content=target_content, board_summary=board.summary(),
         history_text=history_text, experiment_num=experiment_num,
@@ -336,42 +355,85 @@ def build_prompt(agent: AgentConfig, task_desc: str, target_content: str,
 
 
 # ---------------------------------------------------------------------------
-# Response parsing (v2: more robust)
+# Response parsing — v0.3: supports both diff and full-file responses
 # ---------------------------------------------------------------------------
 
-def strip_think_tags(text: str) -> str:
-    """Remove <think>...</think> blocks from LLM response."""
+def strip_think_tags(text):
+    # type: (str) -> str
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
-def extract_file_content(response: str) -> Optional[str]:
+def apply_diffs(original, response):
+    # type: (str, str) -> Optional[str]
+    """Apply SEARCH/REPLACE diff blocks to original content. Returns new content or None."""
     cleaned = strip_think_tags(response)
-    # Try ```file first
+
+    # Find all SEARCH/REPLACE blocks
+    pattern = r"<<<<\s*SEARCH\s*\n(.*?)\n====\s*\n(.*?)\n>>>>\s*REPLACE"
+    blocks = re.findall(pattern, cleaned, re.DOTALL)
+
+    if not blocks:
+        return None
+
+    result = original
+    for search, replace in blocks:
+        search = search.rstrip("\n")
+        replace = replace.rstrip("\n")
+        if search in result:
+            result = result.replace(search, replace, 1)
+        else:
+            # Try fuzzy match: strip leading/trailing whitespace per line
+            search_stripped = "\n".join(l.rstrip() for l in search.split("\n"))
+            result_stripped_lines = result.split("\n")
+            # Try to find a matching region
+            found = False
+            for i in range(len(result_stripped_lines)):
+                candidate_lines = result_stripped_lines[i:i + search.count("\n") + 1]
+                candidate = "\n".join(l.rstrip() for l in candidate_lines)
+                if candidate == search_stripped:
+                    original_lines = result.split("\n")
+                    new_lines = (original_lines[:i] +
+                                replace.split("\n") +
+                                original_lines[i + len(candidate_lines):])
+                    result = "\n".join(new_lines)
+                    found = True
+                    break
+            if not found:
+                return None  # search text not found
+
+    if result == original:
+        return None  # no actual changes
+
+    return result
+
+
+def extract_file_content(response):
+    # type: (str) -> Optional[str]
+    cleaned = strip_think_tags(response)
     match = re.search(r"```file\s*\n(.*?)```", cleaned, re.DOTALL)
     if match:
         return match.group(1)
-    # Try any language-tagged code block
     match = re.search(r"```(?:python|javascript|yaml|json|txt|sh|toml|py)?\s*\n(.*?)```", cleaned, re.DOTALL)
     if match:
         return match.group(1)
-    # Last resort: try to find the largest code block
     blocks = re.findall(r"```\w*\s*\n(.*?)```", cleaned, re.DOTALL)
     if blocks:
         return max(blocks, key=len)
     return None
 
 
-def extract_reasoning(response: str) -> str:
+def extract_reasoning(response):
+    # type: (str) -> str
     cleaned = strip_think_tags(response)
-    match = re.search(r"```", cleaned)
+    # Find first code/diff block
+    match = re.search(r"(?:```|<<<<)", cleaned)
     if match:
         return cleaned[:match.start()].strip()[:500]
     return cleaned[:500]
 
 
-def extract_change_summary(reasoning: str) -> str:
-    """Extract a short summary of WHAT was changed for dedup."""
-    # Take first sentence or first 100 chars
+def extract_change_summary(reasoning):
+    # type: (str) -> str
     for sep in [". ", ".\n", "\n"]:
         idx = reasoning.find(sep)
         if 10 < idx < 200:
@@ -383,31 +445,29 @@ def extract_change_summary(reasoning: str) -> str:
 # Git helpers
 # ---------------------------------------------------------------------------
 
-def git(work_dir: Path, *args) -> subprocess.CompletedProcess:
+def git(work_dir, *args):
     return subprocess.run(
-        ["git"] + list(args), cwd=work_dir,
-        capture_output=True, text=True,
+        ["git"] + list(args), cwd=work_dir, capture_output=True, text=True,
     )
 
-
-def git_init(work_dir: Path):
+def git_init(work_dir):
     if not (work_dir / ".git").exists():
         git(work_dir, "init")
         git(work_dir, "add", "-A")
         git(work_dir, "commit", "-m", "baseline")
 
-
-def git_commit(work_dir: Path, message: str):
+def git_commit(work_dir, message):
     git(work_dir, "add", "-A")
     git(work_dir, "commit", "-m", message)
 
 
 # ---------------------------------------------------------------------------
-# SwarmEngine — main loop (v2)
+# SwarmEngine v0.3 — parallel agents, diff mode, smart exploration
 # ---------------------------------------------------------------------------
 
 class SwarmEngine:
-    def __init__(self, task_path: str):
+    def __init__(self, task_path):
+        # type: (str) -> None
         self.task_path = Path(task_path).resolve()
         self.work_dir = self.task_path.parent
         self.task = parse_task(self.task_path)
@@ -419,49 +479,218 @@ class SwarmEngine:
         self.timeout = int(self.task.get("timeout", "300"))
         self.eval_runs = int(self.task.get("eval_runs", "1"))
 
+        # v0.3: diff mode for files > 50 lines
+        target_lines = self.target_file.read_text().count("\n") if self.target_file.exists() else 0
+        self.use_diff = self.task.get("mode", "auto") == "diff" or \
+                        (self.task.get("mode", "auto") == "auto" and target_lines > 50)
+
+        # v0.3: parallel mode
+        self.parallel = self.task.get("parallel", "false").lower() == "true"
+
         self.board = Board(self.work_dir / "board.json")
 
-        # Load custom agent prompts if available
-        self.prompt_module = load_agent_prompts(self.work_dir)
-        if self.prompt_module and hasattr(self.prompt_module, "AGENTS"):
-            self.agents = self.prompt_module.AGENTS
+        prompt_module = load_agent_prompts(self.work_dir)
+        if prompt_module and hasattr(prompt_module, "AGENTS"):
+            self.agents = prompt_module.AGENTS
         else:
             self.agents = DEFAULT_AGENTS
 
-        self.agent_histories: Dict[str, List[str]] = {a.name: [] for a in self.agents}
-
-        self.baseline_score: Optional[float] = None
-        self.best_score: Optional[float] = None
+        self.agent_histories = {a.name: [] for a in self.agents}  # type: Dict[str, List[str]]
+        self.baseline_score = None  # type: Optional[float]
+        self.best_score = None  # type: Optional[float]
         self.experiment_count = 0
+        self._lock = threading.Lock()  # for parallel mode
 
-    def is_better(self, new: float, old: float) -> bool:
+    def is_better(self, new, old):
         if self.direction == "minimize":
             return new < old
         return new > old
 
-    def _eval(self) -> Optional[float]:
-        """Run eval with configured number of runs."""
-        return run_eval(self.eval_cmd, self.work_dir, self.timeout, self.eval_runs)
+    def _eval(self, work_dir=None):
+        wd = work_dir or self.work_dir
+        return run_eval(self.eval_cmd, wd, self.timeout, self.eval_runs)
+
+    def _run_single_agent(self, agent, round_num, target_content):
+        # type: (AgentConfig, int, str) -> Optional[tuple]
+        """Run one agent's experiment. Returns (Finding, new_content) or None."""
+
+        with self._lock:
+            self.experiment_count += 1
+            exp_num = self.experiment_count
+            current_best = self.best_score
+
+        print(f"\n  [{agent.name}] experiment #{exp_num}")
+
+        messages = build_prompt(
+            agent, self.task["description"], target_content,
+            self.target_file.name, self.board,
+            self.agent_histories.get(agent.name, []),
+            exp_num, self.use_diff,
+        )
+
+        # Call LLM
+        try:
+            reply = call_llm(messages, agent.temperature)
+        except Exception as e:
+            print(f"    LLM error: {e}")
+            return (None, None)
+
+        reasoning = extract_reasoning(reply)
+        change_summary = extract_change_summary(reasoning)
+
+        # Apply changes — diff mode or full-file mode
+        if self.use_diff:
+            new_content = apply_diffs(target_content, reply)
+            if new_content is None:
+                # Fallback to full-file extraction
+                new_content = extract_file_content(reply)
+        else:
+            new_content = extract_file_content(reply)
+
+        if not new_content:
+            print(f"    could not extract changes from response")
+            return (Finding(
+                agent=agent.name, round=round_num, experiment=exp_num,
+                score=0, baseline=current_best, delta=0,
+                kept=False, reasoning=reasoning,
+                description=f"PARSE_FAIL: {reasoning[:100]}",
+                change_summary="(could not parse response)",
+                timestamp=datetime.now().isoformat(),
+            ), None)
+
+        if new_content.strip() == target_content.strip():
+            print(f"    no changes proposed")
+            return None, None
+
+        if self.parallel:
+            # Parallel: eval in a temp copy
+            finding = self._eval_in_copy(
+                agent, round_num, exp_num, target_content,
+                new_content, reasoning, change_summary, current_best,
+            )
+        else:
+            # Sequential: eval in place
+            finding = self._eval_in_place(
+                agent, round_num, exp_num, target_content,
+                new_content, reasoning, change_summary, current_best,
+            )
+        return (finding, new_content) if finding else (None, None)
+
+    def _eval_in_place(self, agent, round_num, exp_num, target_content,
+                        new_content, reasoning, change_summary, current_best):
+        """Sequential mode: write file, eval, keep or revert."""
+        self.target_file.write_text(new_content)
+        score = self._eval()
+
+        if score is None:
+            self.target_file.write_text(target_content)
+            print(f"    CRASH  | {change_summary[:80]}")
+            return Finding(
+                agent=agent.name, round=round_num, experiment=exp_num,
+                score=0, baseline=current_best, delta=0,
+                kept=False, reasoning=reasoning,
+                description=f"CRASH: {reasoning[:100]}",
+                change_summary=change_summary,
+                timestamp=datetime.now().isoformat(),
+            )
+
+        delta = (score - current_best)
+        if self.direction == "minimize":
+            delta = (current_best - score)
+
+        kept = self.is_better(score, current_best)
+
+        if kept:
+            with self._lock:
+                self.best_score = score
+            git_commit(self.work_dir, f"R{round_num} {agent.name}: {change_summary[:80]}")
+            print(f"    KEPT     score={score:.4f}  delta={delta:+.4f}")
+        else:
+            self.target_file.write_text(target_content)
+            print(f"    reverted score={score:.4f}  delta={delta:+.4f}")
+
+        print(f"    change: {change_summary[:100]}")
+
+        return Finding(
+            agent=agent.name, round=round_num, experiment=exp_num,
+            score=score, baseline=current_best, delta=delta,
+            kept=kept, reasoning=reasoning,
+            description=reasoning[:200],
+            change_summary=change_summary,
+            timestamp=datetime.now().isoformat(),
+        )
+
+    def _eval_in_copy(self, agent, round_num, exp_num, target_content,
+                       new_content, reasoning, change_summary, current_best):
+        """Parallel mode: eval in a temp directory, merge winner after."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            # Copy work_dir contents (excluding .git)
+            for item in self.work_dir.iterdir():
+                if item.name in (".git", "board.json"):
+                    continue
+                dest = tmp_path / item.name
+                if item.is_dir():
+                    shutil.copytree(item, dest)
+                else:
+                    shutil.copy2(item, dest)
+
+            # Write modified file
+            tmp_target = tmp_path / self.target_file.relative_to(self.work_dir)
+            tmp_target.write_text(new_content)
+
+            score = self._eval(tmp_path)
+
+        if score is None:
+            print(f"    CRASH  | {change_summary[:80]}")
+            return Finding(
+                agent=agent.name, round=round_num, experiment=exp_num,
+                score=0, baseline=current_best, delta=0,
+                kept=False, reasoning=reasoning,
+                description=f"CRASH: {reasoning[:100]}",
+                change_summary=change_summary,
+                timestamp=datetime.now().isoformat(),
+            )
+
+        delta = (score - current_best)
+        if self.direction == "minimize":
+            delta = (current_best - score)
+
+        kept = self.is_better(score, current_best)
+        print(f"    {'KEPT' if kept else 'reverted':8s} score={score:.4f}  delta={delta:+.4f}")
+        print(f"    change: {change_summary[:100]}")
+
+        return Finding(
+            agent=agent.name, round=round_num, experiment=exp_num,
+            score=score, baseline=current_best, delta=delta,
+            kept=kept, reasoning=reasoning,
+            description=reasoning[:200],
+            change_summary=change_summary,
+            timestamp=datetime.now().isoformat(),
+        )
 
     def run(self):
-        print("SwarmResearch Engine v0.2")
+        mode_label = "diff" if self.use_diff else "full-file"
+        par_label = "parallel" if self.parallel else "sequential"
+        print(f"SwarmResearch Engine v0.3 [{mode_label}, {par_label}]")
         print(f"  Task:      {self.task_path}")
         print(f"  Target:    {self.target_file}")
         print(f"  Eval:      {self.eval_cmd}")
         print(f"  Direction: {self.direction}")
         print(f"  Rounds:    {self.rounds}")
-        print(f"  Eval runs: {self.eval_runs} (median)")
+        print(f"  Eval runs: {self.eval_runs}")
         print(f"  Agents:    {', '.join(a.name for a in self.agents)}")
         print()
 
         # Baseline
-        print(f"Running baseline evaluation ({self.eval_runs} runs)...")
+        print(f"Running baseline ({self.eval_runs} runs)...")
         self.baseline_score = self._eval()
         if self.baseline_score is None:
-            print("ERROR: baseline eval failed. Fix your eval command first.")
+            print("ERROR: baseline eval failed.")
             return
         self.best_score = self.baseline_score
-        print(f"Baseline score: {self.baseline_score:.4f}\n")
+        print(f"Baseline: {self.baseline_score:.4f}\n")
 
         git_init(self.work_dir)
 
@@ -470,104 +699,76 @@ class SwarmEngine:
             print(f"ROUND {round_num}/{self.rounds}  |  best = {self.best_score:.4f}")
             print(f"{'=' * 60}")
 
-            for agent in self.agents:
-                self.experiment_count += 1
-                print(f"\n  [{agent.name}] experiment #{self.experiment_count}")
+            target_content = self.target_file.read_text()
 
-                target_content = self.target_file.read_text()
-
-                messages = build_prompt(
-                    agent, self.task["description"], target_content,
-                    self.target_file.name, self.board,
-                    self.agent_histories[agent.name],
-                    self.experiment_count,
-                    self.prompt_module,
-                )
-
-                # Call LLM
-                try:
-                    reply = call_llm(messages, agent.temperature)
-                except Exception as e:
-                    print(f"    LLM error: {e}")
-                    continue
-
-                new_content = extract_file_content(reply)
-                reasoning = extract_reasoning(reply)
-                change_summary = extract_change_summary(reasoning)
-
-                if not new_content:
-                    print(f"    could not extract file content from response")
-                    # Log to board so other agents know
-                    finding = Finding(
-                        agent=agent.name, round=round_num,
-                        experiment=self.experiment_count,
-                        score=0, baseline=self.best_score, delta=0,
-                        kept=False, reasoning=reasoning,
-                        description=f"PARSE_FAIL: {reasoning[:100]}",
-                        change_summary="(response could not be parsed)",
-                        timestamp=datetime.now().isoformat(),
-                    )
-                    self.board.add(finding)
-                    continue
-
-                if new_content.strip() == target_content.strip():
-                    print(f"    no changes proposed")
-                    continue
-
-                # Apply change
-                self.target_file.write_text(new_content)
-
-                # Eval
-                score = self._eval()
-
-                if score is None:
-                    self.target_file.write_text(target_content)
-                    finding = Finding(
-                        agent=agent.name, round=round_num,
-                        experiment=self.experiment_count,
-                        score=0, baseline=self.best_score, delta=0,
-                        kept=False, reasoning=reasoning,
-                        description=f"CRASH: {reasoning[:100]}",
-                        change_summary=change_summary,
-                        timestamp=datetime.now().isoformat(),
-                    )
-                    self.board.add(finding)
-                    print(f"    CRASH  | {change_summary[:80]}")
-                    continue
-
-                delta = (score - self.best_score)
-                if self.direction == "minimize":
-                    delta = (self.best_score - score)
-
-                kept = self.is_better(score, self.best_score)
-
-                if kept:
-                    self.best_score = score
-                    git_commit(self.work_dir, f"R{round_num} {agent.name}: {change_summary[:80]}")
-                    print(f"    KEPT     score={score:.4f}  delta={delta:+.4f}")
-                else:
-                    self.target_file.write_text(target_content)
-                    print(f"    reverted score={score:.4f}  delta={delta:+.4f}")
-
-                print(f"    change: {change_summary[:100]}")
-
-                finding = Finding(
-                    agent=agent.name, round=round_num,
-                    experiment=self.experiment_count,
-                    score=score, baseline=self.best_score,
-                    delta=delta, kept=kept, reasoning=reasoning,
-                    description=reasoning[:200],
-                    change_summary=change_summary,
-                    timestamp=datetime.now().isoformat(),
-                )
-                self.board.add(finding)
-
-                status = "KEPT" if kept else "reverted"
-                self.agent_histories[agent.name].append(
-                    f"R{round_num}: [{status}] {change_summary[:80]} -> {score:.4f}"
-                )
+            if self.parallel:
+                self._run_round_parallel(round_num, target_content)
+            else:
+                self._run_round_sequential(round_num, target_content)
 
         # Report
+        self._print_report()
+
+    def _run_round_sequential(self, round_num, target_content):
+        """Run agents one by one. Each builds on the previous kept changes."""
+        for agent in self.agents:
+            target_content = self.target_file.read_text()  # re-read after possible keeps
+            finding, _ = self._run_single_agent(agent, round_num, target_content)
+            if finding:
+                self.board.add(finding)
+                status = "KEPT" if finding.kept else "reverted"
+                self.agent_histories[agent.name].append(
+                    f"R{round_num}: [{status}] {finding.change_summary[:80]} -> {finding.score:.4f}"
+                )
+
+    def _run_round_parallel(self, round_num, target_content):
+        """Run all agents in parallel. Best result wins the round."""
+        results = []  # list of (finding, new_content)
+
+        with ThreadPoolExecutor(max_workers=len(self.agents)) as pool:
+            futures = {
+                pool.submit(self._run_single_agent, agent, round_num, target_content): agent
+                for agent in self.agents
+            }
+            for future in as_completed(futures):
+                agent = futures[future]
+                try:
+                    result = future.result()
+                    if result and result[0]:
+                        results.append(result)
+                except Exception as e:
+                    print(f"    [{agent.name}] error: {e}")
+
+        # Pick the best among candidates that improved
+        candidates = [(f, c) for f, c in results if f.kept and c]
+
+        if candidates:
+            winner_finding, winner_content = max(candidates, key=lambda x: x[0].delta)
+            print(f"\n  >> Round winner: {winner_finding.agent} (delta={winner_finding.delta:+.4f})")
+
+            # Apply winner's content to the actual target file
+            self.target_file.write_text(winner_content)
+            with self._lock:
+                self.best_score = winner_finding.score
+            git_commit(self.work_dir, f"R{round_num} {winner_finding.agent}: {winner_finding.change_summary[:80]}")
+
+            for f, _ in results:
+                f_copy = Finding(**asdict(f))
+                f_copy.kept = (f is winner_finding)
+                self.board.add(f_copy)
+                self.agent_histories[f.agent].append(
+                    f"R{round_num}: [{'KEPT' if f is winner_finding else 'reverted'}] "
+                    f"{f.change_summary[:80]} -> {f.score:.4f}"
+                )
+        else:
+            # All failed
+            for f, _ in results:
+                self.board.add(f)
+                self.agent_histories[f.agent].append(
+                    f"R{round_num}: [reverted] {f.change_summary[:80]} -> {f.score:.4f}"
+                )
+
+    def _print_report(self):
         print(f"\n{'=' * 60}")
         print("DONE")
         print(f"  Experiments: {self.experiment_count}")
