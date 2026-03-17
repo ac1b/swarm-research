@@ -2,14 +2,15 @@ import math
 
 def process_data(data: list) -> float:
     """Process a list of numbers: filter, transform, aggregate."""
+    result = 0.0
     sqrt = math.sqrt
-    one = 1.0
+    _round = round
     two = 2.0
-    total = 0.0
+    one = 1.0
     for x in data:
         if x > one:
             val = sqrt(x)
-            total += val * two + one / (val + one)
-        elif x > 0:
-            total += sqrt(x)
-    return round(total, 6)
+            result += val * two + one / (val + one)
+        elif x > 0.0:
+            result += sqrt(x)
+    return _round(result, 6)
