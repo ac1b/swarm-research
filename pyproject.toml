@@ -1,10 +1,21 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "swarm-research"
-version = "0.3.0"
+version = "0.3.1"
 description = "Autonomous multi-agent optimization framework"
 requires-python = ">=3.11"
+license = "MIT"
 dependencies = [
-    "anthropic>=0.40",
-    "openai>=1.50",
     "python-dotenv>=1.0",
 ]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40"]
+openai = ["openai>=1.50"]
+all = ["anthropic>=0.40", "openai>=1.50"]
+
+[project.scripts]
+swarm-research = "run:main"

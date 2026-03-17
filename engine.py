@@ -138,8 +138,8 @@ class Board:
                 )
 
         if failed:
-            lines.append("\n=== REVERTED (DO NOT repeat) ===")
-            for f in failed[-8:]:
+            lines.append(f"\n=== REVERTED (DO NOT repeat) [{len(failed)} total] ===")
+            for f in failed[-10:]:
                 lines.append(
                     f"  R{f.round} {f.agent}: {f.change_summary[:150]} "
                     f"| score={f.score:.4f} ({f.delta:+.4f})"
@@ -204,6 +204,12 @@ def run_eval_once(eval_cmd, work_dir, timeout=300):
             print(f"    eval error: {stderr_tail}")
             return None
 
+        # Prefer explicit SCORE: marker, fallback to last number in output
+        for line in reversed(result.stdout.strip().split("\n")):
+            score_match = re.search(r"SCORE:\s*([-+]?\d*\.?\d+)", line.strip())
+            if score_match:
+                return float(score_match.group(1))
+
         for line in reversed(result.stdout.strip().split("\n")):
             match = re.search(r"[-+]?\d*\.?\d+", line.strip())
             if match:
@@ -234,13 +240,34 @@ def run_eval(eval_cmd, work_dir, timeout=300, runs=1):
 # LLM client
 # ---------------------------------------------------------------------------
 
+_llm_clients = {}  # type: Dict[str, object]
+_llm_clients_lock = threading.Lock()
+
+
+def _get_llm_client():
+    """Get or create a cached LLM client. Thread-safe."""
+    provider = os.environ.get("LLM_PROVIDER", "anthropic")
+    if provider not in _llm_clients:
+        with _llm_clients_lock:
+            if provider not in _llm_clients:  # double-check after lock
+                if provider == "anthropic":
+                    from anthropic import Anthropic
+                    _llm_clients[provider] = Anthropic(api_key=os.environ["LLM_API_KEY"])
+                else:
+                    from openai import OpenAI
+                    _llm_clients[provider] = OpenAI(
+                        base_url=os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
+                        api_key=os.environ.get("LLM_API_KEY", ""),
+                    )
+    return _llm_clients[provider]
+
+
 def call_llm(messages, temperature, max_tokens=16000):
     # type: (List[dict], float, int) -> str
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
+    client = _get_llm_client()
 
     if provider == "anthropic":
-        from anthropic import Anthropic
-        client = Anthropic(api_key=os.environ["LLM_API_KEY"])
         system = ""
         user_msgs = []
         for m in messages:
@@ -255,11 +282,6 @@ def call_llm(messages, temperature, max_tokens=16000):
         )
         return resp.content[0].text
     else:
-        from openai import OpenAI
-        client = OpenAI(
-            base_url=os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
-            api_key=os.environ.get("LLM_API_KEY", ""),
-        )
         resp = client.chat.completions.create(
             model=os.environ.get("LLM_MODEL", "gpt-4o-mini"),
             messages=messages, temperature=temperature, max_tokens=max_tokens,
@@ -336,7 +358,7 @@ def build_prompt(agent, task_desc, target_content, target_name,
     failed_block = ""
     if failed_list:
         failed_block = "\nDO NOT try these (already failed):\n" + \
-            "\n".join(f"- {a[:120]}" for a in failed_list[-8:])
+            "\n".join(f"- {a[:120]}" for a in failed_list)
 
     sys_template = DIFF_SYSTEM_TEMPLATE if use_diff else FULL_SYSTEM_TEMPLATE
     system = sys_template.format(
@@ -399,6 +421,7 @@ def apply_diffs(original, response):
                     found = True
                     break
             if not found:
+                print(f"    diff mismatch: could not find block starting with: {search[:80]!r}")
                 return None  # search text not found
 
     if result == original:
@@ -499,6 +522,8 @@ class SwarmEngine:
         self.baseline_score = None  # type: Optional[float]
         self.best_score = None  # type: Optional[float]
         self.experiment_count = 0
+        self.stale_rounds = 0  # consecutive rounds without improvement
+        self.early_stop = int(self.task.get("early_stop", "0"))  # 0 = disabled
         self._lock = threading.Lock()  # for parallel mode
 
     def is_better(self, new, old):
@@ -699,12 +724,24 @@ class SwarmEngine:
             print(f"ROUND {round_num}/{self.rounds}  |  best = {self.best_score:.4f}")
             print(f"{'=' * 60}")
 
+            score_before = self.best_score
             target_content = self.target_file.read_text()
 
             if self.parallel:
                 self._run_round_parallel(round_num, target_content)
             else:
                 self._run_round_sequential(round_num, target_content)
+
+            # Early stopping: track consecutive rounds without improvement
+            improved = self.is_better(self.best_score, score_before)
+            if improved:
+                self.stale_rounds = 0
+            else:
+                self.stale_rounds += 1
+
+            if self.early_stop and self.stale_rounds >= self.early_stop:
+                print(f"\n  Early stop: {self.stale_rounds} rounds without improvement.")
+                break
 
         # Report
         self._print_report()
