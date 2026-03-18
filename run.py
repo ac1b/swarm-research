@@ -19,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description="SwarmResearch — multi-agent optimization engine")
     parser.add_argument("task", help="Path to task.md")
     parser.add_argument("--rounds", type=int, help="Override number of rounds")
+    parser.add_argument("--no-report", action="store_true", help="Skip LLM report generation")
 
     args = parser.parse_args()
 
@@ -29,6 +30,8 @@ def main():
     engine = SwarmEngine(args.task)
     if args.rounds:
         engine.rounds = args.rounds
+    if args.no_report:
+        engine.no_report = True
     engine.run()
 
 

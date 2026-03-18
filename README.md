@@ -78,6 +78,7 @@ Description of what to optimize and any constraints.
 | `eval_runs` | `1` | Runs per eval (median used for >1) |
 | `mode` | `auto` | `full` = rewrite file, `diff` = SEARCH/REPLACE blocks, `auto` = diff for >50 lines |
 | `parallel` | `false` | Run agents in parallel (best result wins each round) |
+| `early_stop` | `0` | Stop after N rounds without improvement (0 = disabled) |
 
 ## Supported LLM providers
 
@@ -101,6 +102,9 @@ Optimize a Python function for maximum speed. Baseline ~80 ops/sec → 93+ ops/s
 
 ```bash
 python3 run.py examples/speed-opt/task.md --rounds 5
+
+# Resume a crashed/stopped run (auto-detects board.json)
+python3 run.py examples/speed-opt/task.md
 ```
 
 ### webhunter-prompts

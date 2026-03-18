@@ -1,15 +1,14 @@
 """
-SwarmResearch Engine v0.3
+SwarmResearch Engine v0.4
 
 Autonomous multi-agent optimization framework.
-v0.3: diff mode, parallel agents, smarter exploration.
+v0.4: resume, phase-aware prompting, per-agent memory, LLM report.
 """
 
 import json
 import os
 import re
 import subprocess
-import random
 import shutil
 import threading
 from typing import Optional, List, Dict
@@ -100,21 +99,31 @@ class Board:
         # type: (Path) -> None
         self.path = path
         self.findings = []  # type: List[Finding]
+        self.meta = {}  # type: dict
         self._lock = threading.Lock()
         if self.path.exists():
             try:
-                data = json.loads(self.path.read_text())
-                self.findings = [Finding(**f) for f in data]
+                raw = json.loads(self.path.read_text())
+                if isinstance(raw, dict):
+                    self.meta = raw.get("meta", {})
+                    self.findings = [Finding(**f) for f in raw.get("findings", [])]
+                elif isinstance(raw, list):
+                    # backward compat: old format was a plain list
+                    self.findings = [Finding(**f) for f in raw]
             except (json.JSONDecodeError, TypeError):
                 self.findings = []
+
+    def _save(self):
+        self.path.write_text(json.dumps(
+            {"meta": self.meta, "findings": [asdict(f) for f in self.findings]},
+            indent=2, ensure_ascii=False,
+        ))
 
     def add(self, finding):
         # type: (Finding) -> None
         with self._lock:
             self.findings.append(finding)
-            self.path.write_text(json.dumps(
-                [asdict(f) for f in self.findings], indent=2, ensure_ascii=False
-            ))
+            self._save()
 
     def summary(self, last_n=20):
         # type: (int) -> str
@@ -163,6 +172,52 @@ class Board:
         # type: () -> List[str]
         with self._lock:
             return [f.change_summary for f in self.findings if not f.kept]
+
+
+# ---------------------------------------------------------------------------
+# Agent memory — per-agent persistent storage
+# ---------------------------------------------------------------------------
+
+class AgentMemory:
+    """Per-agent persistent memory. Stores detailed experiment history to disk."""
+
+    def __init__(self, memory_dir):
+        self.memory_dir = Path(memory_dir)
+        self.memory_dir.mkdir(exist_ok=True)
+        self._lock = threading.Lock()
+
+    def _path(self, agent_name):
+        return self.memory_dir / f"{agent_name}.json"
+
+    def load(self, agent_name):
+        path = self._path(agent_name)
+        if path.exists():
+            try:
+                return json.loads(path.read_text())
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return []
+
+    def add(self, agent_name, entry):
+        with self._lock:
+            entries = self.load(agent_name)
+            entries.append(entry)
+            self._path(agent_name).write_text(
+                json.dumps(entries, indent=2, ensure_ascii=False)
+            )
+
+    def format_for_prompt(self, agent_name, last_n=10):
+        entries = self.load(agent_name)
+        if not entries:
+            return "No experiments yet."
+        lines = []
+        for e in entries[-last_n:]:
+            status = "KEPT" if e["kept"] else "REVERTED"
+            lines.append(
+                f"R{e['round']} [{status}] score={e['score']:.4f} delta={e['delta']:+.4f}"
+                f"\n  {e['reasoning'][:200]}"
+            )
+        return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -344,15 +399,16 @@ USER_TEMPLATE = """## Task
 ## Board (shared findings from all agents)
 {board_summary}
 
-## Your recent history
-{history_text}
+## Your experiment memory
+{memory_text}
 
+{phase_hint}
 Experiment #{experiment_num}. Propose your next change."""
 
 
 def build_prompt(agent, task_desc, target_content, target_name,
-                 board, history, experiment_num, use_diff=False):
-    # type: (AgentConfig, str, str, str, Board, List[str], int, bool) -> List[dict]
+                 board, memory_text, experiment_num, use_diff=False, phase_hint=""):
+    # type: (AgentConfig, str, str, str, Board, str, int, bool, str) -> List[dict]
 
     failed_list = board.failed_approaches()
     failed_block = ""
@@ -366,11 +422,11 @@ def build_prompt(agent, task_desc, target_content, target_name,
         failed_block=failed_block,
     )
 
-    history_text = "\n".join(history[-5:]) if history else "No history yet."
     user = USER_TEMPLATE.format(
         task_desc=task_desc, target_name=target_name,
         target_content=target_content, board_summary=board.summary(),
-        history_text=history_text, experiment_num=experiment_num,
+        memory_text=memory_text, phase_hint=phase_hint,
+        experiment_num=experiment_num,
     )
 
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
@@ -473,7 +529,20 @@ def git(work_dir, *args):
         ["git"] + list(args), cwd=work_dir, capture_output=True, text=True,
     )
 
+def _ensure_gitignore(work_dir):
+    gitignore = work_dir / ".gitignore"
+    needed = {"board.json", "agent_memory/", "report.md"}
+    if gitignore.exists():
+        existing = set(gitignore.read_text().splitlines())
+        missing = needed - existing
+        if missing:
+            with gitignore.open("a") as f:
+                f.write("\n" + "\n".join(sorted(missing)) + "\n")
+    else:
+        gitignore.write_text("\n".join(sorted(needed)) + "\n")
+
 def git_init(work_dir):
+    _ensure_gitignore(work_dir)
     if not (work_dir / ".git").exists():
         git(work_dir, "init")
         git(work_dir, "add", "-A")
@@ -498,6 +567,7 @@ class SwarmEngine:
         self.target_file = self.work_dir / self.task.get("target", "target/main.txt")
         self.eval_cmd = self.task.get("eval", "python eval.py")
         self.direction = self.task.get("direction", "maximize")
+        self._task_fingerprint = f"{self.target_file.name}|{self.eval_cmd}|{self.direction}"
         self.rounds = int(self.task.get("rounds", "10"))
         self.timeout = int(self.task.get("timeout", "300"))
         self.eval_runs = int(self.task.get("eval_runs", "1"))
@@ -511,6 +581,7 @@ class SwarmEngine:
         self.parallel = self.task.get("parallel", "false").lower() == "true"
 
         self.board = Board(self.work_dir / "board.json")
+        self.memory = AgentMemory(self.work_dir / "agent_memory")
 
         prompt_module = load_agent_prompts(self.work_dir)
         if prompt_module and hasattr(prompt_module, "AGENTS"):
@@ -518,18 +589,29 @@ class SwarmEngine:
         else:
             self.agents = DEFAULT_AGENTS
 
-        self.agent_histories = {a.name: [] for a in self.agents}  # type: Dict[str, List[str]]
         self.baseline_score = None  # type: Optional[float]
         self.best_score = None  # type: Optional[float]
         self.experiment_count = 0
         self.stale_rounds = 0  # consecutive rounds without improvement
         self.early_stop = int(self.task.get("early_stop", "0"))  # 0 = disabled
+        self.no_report = False
+        self.start_round = 1
         self._lock = threading.Lock()  # for parallel mode
 
     def is_better(self, new, old):
         if self.direction == "minimize":
             return new < old
         return new > old
+
+    def _phase_hint(self, round_num):
+        progress = round_num / self.rounds
+        if progress <= 0.3:
+            phase = "EXPLORATION — early stage, many approaches untested"
+        elif progress <= 0.7:
+            phase = "DEVELOPMENT — some patterns emerging, build on findings"
+        else:
+            phase = "REFINEMENT — late stage, diminishing returns expected"
+        return f"Round {round_num}/{self.rounds} ({phase}). Adapt your strategy accordingly."
 
     def _eval(self, work_dir=None):
         wd = work_dir or self.work_dir
@@ -549,8 +631,9 @@ class SwarmEngine:
         messages = build_prompt(
             agent, self.task["description"], target_content,
             self.target_file.name, self.board,
-            self.agent_histories.get(agent.name, []),
+            self.memory.format_for_prompt(agent.name),
             exp_num, self.use_diff,
+            phase_hint=self._phase_hint(round_num),
         )
 
         # Call LLM
@@ -653,7 +736,7 @@ class SwarmEngine:
             tmp_path = Path(tmpdir)
             # Copy work_dir contents (excluding .git)
             for item in self.work_dir.iterdir():
-                if item.name in (".git", "board.json"):
+                if item.name in (".git", "board.json", "agent_memory"):
                     continue
                 dest = tmp_path / item.name
                 if item.is_dir():
@@ -698,7 +781,7 @@ class SwarmEngine:
     def run(self):
         mode_label = "diff" if self.use_diff else "full-file"
         par_label = "parallel" if self.parallel else "sequential"
-        print(f"SwarmResearch Engine v0.3 [{mode_label}, {par_label}]")
+        print(f"SwarmResearch Engine v0.4 [{mode_label}, {par_label}]")
         print(f"  Task:      {self.task_path}")
         print(f"  Target:    {self.target_file}")
         print(f"  Eval:      {self.eval_cmd}")
@@ -708,18 +791,51 @@ class SwarmEngine:
         print(f"  Agents:    {', '.join(a.name for a in self.agents)}")
         print()
 
-        # Baseline
-        print(f"Running baseline ({self.eval_runs} runs)...")
-        self.baseline_score = self._eval()
-        if self.baseline_score is None:
-            print("ERROR: baseline eval failed.")
+        # Eval current state
+        print(f"Evaluating current state ({self.eval_runs} runs)...")
+        current_score = self._eval()
+        if current_score is None:
+            print("ERROR: eval failed.")
             return
-        self.best_score = self.baseline_score
-        print(f"Baseline: {self.baseline_score:.4f}\n")
+
+        # Resume from previous run if board has findings
+        if self.board.findings:
+            old_fp = self.board.meta.get("task")
+            if old_fp and old_fp != self._task_fingerprint:
+                print(f"Board is from a different task. Clearing stale data.")
+                self.board.findings.clear()
+                self.board.meta.clear()
+                self.board._save()
+                # also clear agent memory
+                if self.memory.memory_dir.exists():
+                    shutil.rmtree(self.memory.memory_dir)
+                    self.memory.memory_dir.mkdir(exist_ok=True)
+
+        if self.board.findings:
+            self.start_round = max(f.round for f in self.board.findings) + 1
+            self.experiment_count = len(self.board.findings)
+            self.baseline_score = self.board.findings[0].baseline
+            self.best_score = current_score
+            if self.start_round > self.rounds:
+                print(f"Previous run completed all {self.rounds} rounds. Nothing to do.")
+                print(f"  Delete board.json to start fresh, or increase --rounds.")
+                self._print_report()
+                return
+            print(f"Resuming from round {self.start_round}")
+            print(f"  Original baseline: {self.baseline_score:.4f}")
+            print(f"  Current best:      {self.best_score:.4f}")
+            print(f"  Previous experiments: {self.experiment_count}")
+        else:
+            self.baseline_score = current_score
+            self.best_score = current_score
+            self.board.meta["task"] = self._task_fingerprint
+            self.board._save()
+            print(f"Baseline: {self.baseline_score:.4f}")
+        print()
 
         git_init(self.work_dir)
 
-        for round_num in range(1, self.rounds + 1):
+        for round_num in range(self.start_round, self.rounds + 1):
             print(f"{'=' * 60}")
             print(f"ROUND {round_num}/{self.rounds}  |  best = {self.best_score:.4f}")
             print(f"{'=' * 60}")
@@ -745,6 +861,7 @@ class SwarmEngine:
 
         # Report
         self._print_report()
+        self._generate_report()
 
     def _run_round_sequential(self, round_num, target_content):
         """Run agents one by one. Each builds on the previous kept changes."""
@@ -753,10 +870,7 @@ class SwarmEngine:
             finding, _ = self._run_single_agent(agent, round_num, target_content)
             if finding:
                 self.board.add(finding)
-                status = "KEPT" if finding.kept else "reverted"
-                self.agent_histories[agent.name].append(
-                    f"R{round_num}: [{status}] {finding.change_summary[:80]} -> {finding.score:.4f}"
-                )
+                self._save_agent_memory(finding)
 
     def _run_round_parallel(self, round_num, target_content):
         """Run all agents in parallel. Best result wins the round."""
@@ -793,17 +907,20 @@ class SwarmEngine:
                 f_copy = Finding(**asdict(f))
                 f_copy.kept = (f is winner_finding)
                 self.board.add(f_copy)
-                self.agent_histories[f.agent].append(
-                    f"R{round_num}: [{'KEPT' if f is winner_finding else 'reverted'}] "
-                    f"{f.change_summary[:80]} -> {f.score:.4f}"
-                )
+                self._save_agent_memory(f_copy)
         else:
             # All failed
             for f, _ in results:
                 self.board.add(f)
-                self.agent_histories[f.agent].append(
-                    f"R{round_num}: [reverted] {f.change_summary[:80]} -> {f.score:.4f}"
-                )
+                self._save_agent_memory(f)
+
+    def _save_agent_memory(self, finding):
+        self.memory.add(finding.agent, {
+            "round": finding.round, "experiment": finding.experiment,
+            "score": finding.score, "delta": finding.delta,
+            "kept": finding.kept, "reasoning": finding.reasoning[:300],
+            "change_summary": finding.change_summary,
+        })
 
     def _print_report(self):
         print(f"\n{'=' * 60}")
@@ -820,3 +937,41 @@ class SwarmEngine:
         print(f"  Kept:        {kept_count}/{self.experiment_count}")
         print(f"  Board:       {self.work_dir / 'board.json'}")
         print(f"{'=' * 60}")
+
+    def _generate_report(self):
+        if self.no_report or not self.board.findings:
+            return
+        kept_count = len([f for f in self.board.findings if f.kept])
+        total_delta = self.best_score - self.baseline_score
+        if self.direction == "minimize":
+            total_delta = self.baseline_score - self.best_score
+
+        prompt = (
+            f"Analyze the optimization results and write a brief report.\n\n"
+            f"## Task\n{self.task['description']}\n\n"
+            f"## Results\n"
+            f"- Baseline: {self.baseline_score:.4f}\n"
+            f"- Final best: {self.best_score:.4f}\n"
+            f"- Improvement: {total_delta:+.4f}\n"
+            f"- Total experiments: {self.experiment_count}\n"
+            f"- Kept: {kept_count}\n\n"
+            f"## All experiments\n{self.board.summary(last_n=100)}\n\n"
+            f"Write a brief analysis (3-5 paragraphs):\n"
+            f"1. What approaches worked and why?\n"
+            f"2. What patterns failed?\n"
+            f"3. Key insights for future optimization.\n"
+            f"4. Recommendations for next run."
+        )
+
+        try:
+            print("\nGenerating optimization report...")
+            report = call_llm(
+                [{"role": "system", "content": "You are an optimization analyst. Be concise and specific."},
+                 {"role": "user", "content": prompt}],
+                temperature=0.3, max_tokens=2000,
+            )
+            report_path = self.work_dir / "report.md"
+            report_path.write_text(f"# Optimization Report\n\n{report}\n")
+            print(f"  Report: {report_path}")
+        except Exception as e:
+            print(f"  Report generation failed: {e}")
