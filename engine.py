@@ -12,7 +12,7 @@ import subprocess
 import shutil
 import threading
 from typing import Optional, List, Dict
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -75,6 +75,161 @@ DEFAULT_AGENTS = [
         0.6,
     ),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Search Tree — state tree for backtracking
+# ---------------------------------------------------------------------------
+
+@dataclass
+class TreeNode:
+    id: int
+    parent_id: Optional[int]
+    score: float
+    content: str
+    content_hash: str
+    round_created: int
+    agent: str
+    change_summary: str
+    children: List[int] = field(default_factory=list)
+    visits: int = 0
+    abandoned: bool = False
+
+
+class SearchTree:
+    """Tree of file states for backtracking. Persisted to tree.json."""
+
+    def __init__(self, path):
+        self.path = Path(path)
+        self._lock = threading.Lock()
+        self.nodes = {}  # type: Dict[int, TreeNode]
+        self._next_id = 0
+        self.active_node_id = 0
+        self.backtrack_count = 0
+        if self.path.exists():
+            self._load()
+
+    @staticmethod
+    def _content_hash(content):
+        import hashlib
+        return hashlib.sha256(content.encode()).hexdigest()[:16]
+
+    def _save(self):
+        data = {
+            "active_node_id": self.active_node_id,
+            "backtrack_count": self.backtrack_count,
+            "next_id": self._next_id,
+            "nodes": {str(k): asdict(v) for k, v in self.nodes.items()},
+        }
+        self.path.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+
+    def _load(self):
+        try:
+            raw = json.loads(self.path.read_text())
+            self.active_node_id = raw["active_node_id"]
+            self.backtrack_count = raw.get("backtrack_count", 0)
+            self._next_id = raw["next_id"]
+            for k, v in raw["nodes"].items():
+                self.nodes[int(k)] = TreeNode(**v)
+        except (json.JSONDecodeError, KeyError, TypeError):
+            self.nodes = {}
+            self._next_id = 0
+
+    def create_root(self, score, content):
+        with self._lock:
+            node = TreeNode(
+                id=0, parent_id=None, score=score, content=content,
+                content_hash=self._content_hash(content),
+                round_created=0, agent="baseline",
+                change_summary="baseline",
+            )
+            self.nodes[0] = node
+            self._next_id = 1
+            self.active_node_id = 0
+            self._save()
+            return 0
+
+    def add_child(self, parent_id, score, content, round_created, agent, change_summary):
+        with self._lock:
+            node_id = self._next_id
+            self._next_id += 1
+            node = TreeNode(
+                id=node_id, parent_id=parent_id, score=score,
+                content=content, content_hash=self._content_hash(content),
+                round_created=round_created, agent=agent,
+                change_summary=change_summary,
+            )
+            self.nodes[node_id] = node
+            self.nodes[parent_id].children.append(node_id)
+            self.active_node_id = node_id
+            self._save()
+            return node_id
+
+    def record_visit(self, node_id):
+        with self._lock:
+            self.nodes[node_id].visits += 1
+            self._save()
+
+    def mark_abandoned(self, node_id):
+        with self._lock:
+            self.nodes[node_id].abandoned = True
+            self._save()
+
+    def get_path_to_root(self, node_id):
+        path = []
+        current = node_id
+        while current is not None:
+            path.append(current)
+            current = self.nodes[current].parent_id
+        return list(reversed(path))
+
+    def get_abandoned_paths_summary(self):
+        abandoned = [n for n in self.nodes.values() if n.abandoned]
+        if not abandoned:
+            return ""
+        lines = ["Abandoned branches:"]
+        for n in abandoned:
+            path = self.get_path_to_root(n.id)
+            path_str = " -> ".join(
+                f"{self.nodes[p].agent}({self.nodes[p].score:.4f})" for p in path
+            )
+            lines.append(f"  {path_str} [abandoned at score={n.score:.4f}]")
+        return "\n".join(lines)
+
+    def select_backtrack_target(self, current_id):
+        """Select best node to backtrack to. Returns node_id or None."""
+        current_path = set(self.get_path_to_root(current_id))
+
+        # Score lateral candidates (not on current path)
+        candidates = []
+        for node in self.nodes.values():
+            if node.id in current_path:
+                continue
+            penalty = 0.3 if node.abandoned else 1.0
+            node_score = node.score * (1 / (1 + node.visits)) * penalty
+            candidates.append((node.id, node_score))
+
+        if candidates:
+            candidates.sort(key=lambda x: x[1], reverse=True)
+            return candidates[0][0]
+
+        # Fallback: ancestor with < 3 children (excluding current node)
+        path = self.get_path_to_root(current_id)
+        for node_id in reversed(path[:-1]):
+            if len(self.nodes[node_id].children) < 3:
+                return node_id
+
+        return None
+
+    def max_depth(self):
+        if not self.nodes:
+            return 0
+        max_d = 0
+        for node_id in self.nodes:
+            d = len(self.get_path_to_root(node_id))
+            if d > max_d:
+                max_d = d
+        return max_d
 
 
 def load_agent_prompts(work_dir):
@@ -307,7 +462,10 @@ def _get_llm_client():
             if provider not in _llm_clients:  # double-check after lock
                 if provider == "anthropic":
                     from anthropic import Anthropic
-                    _llm_clients[provider] = Anthropic(api_key=os.environ["LLM_API_KEY"])
+                    kwargs = {"api_key": os.environ["LLM_API_KEY"]}
+                    if os.environ.get("LLM_BASE_URL"):
+                        kwargs["base_url"] = os.environ["LLM_BASE_URL"]
+                    _llm_clients[provider] = Anthropic(**kwargs)
                 else:
                     from openai import OpenAI
                     _llm_clients[provider] = OpenAI(
@@ -403,12 +561,14 @@ USER_TEMPLATE = """## Task
 {memory_text}
 
 {phase_hint}
+{backtrack_context}
 Experiment #{experiment_num}. Propose your next change."""
 
 
 def build_prompt(agent, task_desc, target_content, target_name,
-                 board, memory_text, experiment_num, use_diff=False, phase_hint=""):
-    # type: (AgentConfig, str, str, str, Board, str, int, bool, str) -> List[dict]
+                 board, memory_text, experiment_num, use_diff=False, phase_hint="",
+                 backtrack_context=""):
+    # type: (AgentConfig, str, str, str, Board, str, int, bool, str, str) -> List[dict]
 
     failed_list = board.failed_approaches()
     failed_block = ""
@@ -426,6 +586,7 @@ def build_prompt(agent, task_desc, target_content, target_name,
         task_desc=task_desc, target_name=target_name,
         target_content=target_content, board_summary=board.summary(),
         memory_text=memory_text, phase_hint=phase_hint,
+        backtrack_context=backtrack_context,
         experiment_num=experiment_num,
     )
 
@@ -531,7 +692,7 @@ def git(work_dir, *args):
 
 def _ensure_gitignore(work_dir):
     gitignore = work_dir / ".gitignore"
-    needed = {"board.json", "agent_memory/", "report.md"}
+    needed = {"board.json", "agent_memory/", "report.md", "tree.json"}
     if gitignore.exists():
         existing = set(gitignore.read_text().splitlines())
         missing = needed - existing
@@ -594,6 +755,19 @@ class SwarmEngine:
         self.experiment_count = 0
         self.stale_rounds = 0  # consecutive rounds without improvement
         self.early_stop = int(self.task.get("early_stop", "0"))  # 0 = disabled
+
+        # v0.5: backtracking / tree search
+        self.backtrack = int(self.task.get("backtrack", "0"))
+        self.max_backtracks = int(self.task.get("max_backtracks", "5"))
+        self.backtrack_count = 0
+        self.tree = None  # type: Optional[SearchTree]
+        self.global_best_score = None  # type: Optional[float]
+        self.global_best_content = None  # type: Optional[str]
+
+        if self.backtrack > 0 and 0 < self.early_stop <= self.backtrack:
+            print(f"WARNING: early_stop ({self.early_stop}) <= backtrack ({self.backtrack}). "
+                  f"Early stopping may trigger before backtracking.")
+
         self.no_report = False
         self.start_round = 1
         self._lock = threading.Lock()  # for parallel mode
@@ -634,6 +808,7 @@ class SwarmEngine:
             self.memory.format_for_prompt(agent.name),
             exp_num, self.use_diff,
             phase_hint=self._phase_hint(round_num),
+            backtrack_context=self._backtrack_context(),
         )
 
         # Call LLM
@@ -712,6 +887,15 @@ class SwarmEngine:
             with self._lock:
                 self.best_score = score
             git_commit(self.work_dir, f"R{round_num} {agent.name}: {change_summary[:80]}")
+            if self.tree:
+                self.tree.add_child(
+                    self.tree.active_node_id, score, new_content,
+                    round_created=round_num, agent=agent.name,
+                    change_summary=change_summary,
+                )
+                if self.global_best_score is None or self.is_better(score, self.global_best_score):
+                    self.global_best_score = score
+                    self.global_best_content = new_content
             print(f"    KEPT     score={score:.4f}  delta={delta:+.4f}")
         else:
             self.target_file.write_text(target_content)
@@ -736,7 +920,7 @@ class SwarmEngine:
             tmp_path = Path(tmpdir)
             # Copy work_dir contents (excluding .git)
             for item in self.work_dir.iterdir():
-                if item.name in (".git", "board.json", "agent_memory"):
+                if item.name in (".git", "board.json", "agent_memory", "tree.json"):
                     continue
                 dest = tmp_path / item.name
                 if item.is_dir():
@@ -835,6 +1019,28 @@ class SwarmEngine:
 
         git_init(self.work_dir)
 
+        # Initialize search tree for backtracking
+        if self.backtrack > 0:
+            tree_path = self.work_dir / "tree.json"
+            if tree_path.exists() and self.board.findings:
+                self.tree = SearchTree(tree_path)
+                self.backtrack_count = self.tree.backtrack_count
+                current_hash = SearchTree._content_hash(self.target_file.read_text())
+                active_node = self.tree.nodes.get(self.tree.active_node_id)
+                if active_node and active_node.content_hash != current_hash:
+                    print(f"  Tree hash mismatch, rebuilding tree.")
+                    tree_path.unlink()
+                    self.tree = SearchTree(tree_path)
+                    self.tree.create_root(self.best_score, self.target_file.read_text())
+                else:
+                    print(f"  Resumed tree: {len(self.tree.nodes)} nodes, "
+                          f"{self.backtrack_count} backtracks")
+            else:
+                self.tree = SearchTree(tree_path)
+                self.tree.create_root(self.best_score, self.target_file.read_text())
+            self.global_best_score = self.best_score
+            self.global_best_content = self.target_file.read_text()
+
         for round_num in range(self.start_round, self.rounds + 1):
             print(f"{'=' * 60}")
             print(f"ROUND {round_num}/{self.rounds}  |  best = {self.best_score:.4f}")
@@ -855,9 +1061,25 @@ class SwarmEngine:
             else:
                 self.stale_rounds += 1
 
+            # Backtracking: try different branch if stuck
+            if (self.backtrack > 0 and self.stale_rounds >= self.backtrack
+                    and self.backtrack_count < self.max_backtracks):
+                if self._do_backtrack(round_num):
+                    self.stale_rounds = 0
+                    continue
+
             if self.early_stop and self.stale_rounds >= self.early_stop:
                 print(f"\n  Early stop: {self.stale_rounds} rounds without improvement.")
                 break
+
+        # Restore global best if it's better than current
+        if self.tree and self.global_best_content is not None:
+            if self.is_better(self.global_best_score, self.best_score):
+                self.target_file.write_text(self.global_best_content)
+                self.best_score = self.global_best_score
+                git_commit(self.work_dir,
+                           f"Restore global best ({self.global_best_score:.4f})")
+                print(f"\n  Restored global best: {self.global_best_score:.4f}")
 
         # Report
         self._print_report()
@@ -865,6 +1087,8 @@ class SwarmEngine:
 
     def _run_round_sequential(self, round_num, target_content):
         """Run agents one by one. Each builds on the previous kept changes."""
+        if self.tree:
+            self.tree.record_visit(self.tree.active_node_id)
         for agent in self.agents:
             target_content = self.target_file.read_text()  # re-read after possible keeps
             finding, _ = self._run_single_agent(agent, round_num, target_content)
@@ -874,6 +1098,8 @@ class SwarmEngine:
 
     def _run_round_parallel(self, round_num, target_content):
         """Run all agents in parallel. Best result wins the round."""
+        if self.tree:
+            self.tree.record_visit(self.tree.active_node_id)
         results = []  # list of (finding, new_content)
 
         with ThreadPoolExecutor(max_workers=len(self.agents)) as pool:
@@ -902,6 +1128,16 @@ class SwarmEngine:
             with self._lock:
                 self.best_score = winner_finding.score
             git_commit(self.work_dir, f"R{round_num} {winner_finding.agent}: {winner_finding.change_summary[:80]}")
+            if self.tree:
+                self.tree.add_child(
+                    self.tree.active_node_id, winner_finding.score, winner_content,
+                    round_created=round_num, agent=winner_finding.agent,
+                    change_summary=winner_finding.change_summary,
+                )
+                if (self.global_best_score is None
+                        or self.is_better(winner_finding.score, self.global_best_score)):
+                    self.global_best_score = winner_finding.score
+                    self.global_best_content = winner_content
 
             for f, _ in results:
                 f_copy = Finding(**asdict(f))
@@ -922,6 +1158,64 @@ class SwarmEngine:
             "change_summary": finding.change_summary,
         })
 
+    def _do_backtrack(self, round_num):
+        """Try to backtrack to a better starting point. Returns True if successful."""
+        if not self.tree:
+            return False
+
+        current_id = self.tree.active_node_id
+        target_id = self.tree.select_backtrack_target(current_id)
+        if target_id is None:
+            print(f"\n  Backtrack: no viable targets (search exhausted).")
+            return False
+
+        target_node = self.tree.nodes[target_id]
+        current_node = self.tree.nodes[current_id]
+
+        self.tree.mark_abandoned(current_id)
+
+        self.target_file.write_text(target_node.content)
+        self.best_score = target_node.score
+
+        self.tree.active_node_id = target_id
+        self.backtrack_count += 1
+        self.tree.backtrack_count = self.backtrack_count
+        self.tree._save()
+
+        git_commit(self.work_dir,
+                   f"BACKTRACK #{self.backtrack_count}: "
+                   f"{current_node.score:.4f} -> {target_node.score:.4f} "
+                   f"(node {current_id} -> {target_id})")
+
+        print(f"\n  BACKTRACK #{self.backtrack_count}: "
+              f"score {current_node.score:.4f} -> {target_node.score:.4f}")
+        print(f"    from: node {current_id} ({current_node.agent})")
+        print(f"    to:   node {target_id} ({target_node.agent})")
+
+        return True
+
+    def _backtrack_context(self):
+        """Generate backtrack context for agent prompts."""
+        if not self.tree or self.backtrack_count == 0:
+            return ""
+
+        path = self.tree.get_path_to_root(self.tree.active_node_id)
+        path_str = " -> ".join(
+            f"{self.tree.nodes[p].agent}({self.tree.nodes[p].score:.4f})" for p in path
+        )
+
+        abandoned_summary = self.tree.get_abandoned_paths_summary()
+
+        lines = [
+            f"## Backtracking active ({self.backtrack_count} backtracks so far)",
+            f"Current branch: {path_str}",
+        ]
+        if abandoned_summary:
+            lines.append(abandoned_summary)
+            lines.append("Try approaches that DIVERGE from the abandoned branches.")
+
+        return "\n".join(lines)
+
     def _print_report(self):
         print(f"\n{'=' * 60}")
         print("DONE")
@@ -936,6 +1230,10 @@ class SwarmEngine:
         kept_count = len([f for f in self.board.findings if f.kept])
         print(f"  Kept:        {kept_count}/{self.experiment_count}")
         print(f"  Board:       {self.work_dir / 'board.json'}")
+        if self.tree:
+            print(f"  Tree nodes:  {len(self.tree.nodes)}")
+            print(f"  Backtracks:  {self.backtrack_count}")
+            print(f"  Max depth:   {self.tree.max_depth()}")
         print(f"{'=' * 60}")
 
     def _generate_report(self):
