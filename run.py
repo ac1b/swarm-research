@@ -21,6 +21,11 @@ def main():
     parser.add_argument("--rounds", type=int, help="Override number of rounds")
     parser.add_argument("--backtrack", type=int, help="Backtrack after N stale rounds (0=disabled)")
     parser.add_argument("--max-backtracks", type=int, help="Max number of backtracks (default 5)")
+    parser.add_argument("--parallel", action="store_true", help="Run agents in parallel")
+    parser.add_argument("--early-stop", type=int, help="Stop after N rounds without improvement (0=disabled)")
+    parser.add_argument("--mode", choices=["full", "diff", "auto"], help="Code edit mode")
+    parser.add_argument("--eval-runs", type=int, help="Number of eval runs to average")
+    parser.add_argument("--timeout", type=int, help="Eval timeout in seconds")
     parser.add_argument("--no-report", action="store_true", help="Skip LLM report generation")
 
     args = parser.parse_args()
@@ -36,6 +41,17 @@ def main():
         engine.backtrack = args.backtrack
     if args.max_backtracks is not None:
         engine.max_backtracks = args.max_backtracks
+    if args.parallel:
+        engine.parallel = True
+    if args.early_stop is not None:
+        engine.early_stop = args.early_stop
+    if args.mode:
+        engine.use_diff = args.mode == "diff" or (
+            args.mode == "auto" and engine.use_diff)
+    if args.eval_runs is not None:
+        engine.eval_runs = args.eval_runs
+    if args.timeout is not None:
+        engine.timeout = args.timeout
     if args.no_report:
         engine.no_report = True
     engine.run()
