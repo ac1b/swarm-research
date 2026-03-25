@@ -179,10 +179,11 @@ class TestBacktrackContext:
 
     def test_has_content_after_backtrack(self, tmp_work_dir):
         engine = make_engine(tmp_work_dir, backtrack=2)
+        tgt_key = "target/solution.py"
 
         tree = SearchTree(tmp_work_dir / "tree.json")
-        tree.create_root(1.0, "x = 1\n")
-        tree.add_child(0, 5.0, "x = 5\n", 1, "Explorer", "increase x")
+        tree.create_root(1.0, {tgt_key: "x = 1\n"})
+        tree.add_child(0, 5.0, {tgt_key: "x = 5\n"}, 1, "Explorer", "increase x")
         tree.mark_abandoned(1)
         tree.active_node_id = 0
         tree.backtrack_count = 1
@@ -205,9 +206,9 @@ class TestDoBacktrack:
     def test_returns_false_no_target(self, tmp_work_dir):
         """Single root node, no lateral targets → returns False."""
         engine = make_engine(tmp_work_dir, backtrack=2)
+        tgt_key = "target/solution.py"
         engine.tree = SearchTree(tmp_work_dir / "tree.json")
-        engine.tree.create_root(1.0, "x = 1\n")
-        engine.target_file = tmp_work_dir / "target" / "solution.py"
+        engine.tree.create_root(1.0, {tgt_key: "x = 1\n"})
 
         # Need git init for git_commit
         from engine import git_init
@@ -218,17 +219,17 @@ class TestDoBacktrack:
     def test_successful_backtrack(self, tmp_work_dir):
         """Backtrack to a lateral node restores its content."""
         engine = make_engine(tmp_work_dir, backtrack=2)
-        engine.target_file = tmp_work_dir / "target" / "solution.py"
         engine.work_dir = tmp_work_dir
         engine.best_score = 5.0
+        tgt_key = "target/solution.py"
 
         from engine import git_init
         git_init(tmp_work_dir)
 
         tree = SearchTree(tmp_work_dir / "tree.json")
-        tree.create_root(1.0, "x = 1\n")
-        tree.add_child(0, 5.0, "x = 5\n", 1, "A", "c1")  # id=1 (current)
-        tree.add_child(0, 3.0, "x = 3\n", 1, "B", "c2")  # id=2 (lateral)
+        tree.create_root(1.0, {tgt_key: "x = 1\n"})
+        tree.add_child(0, 5.0, {tgt_key: "x = 5\n"}, 1, "A", "c1")  # id=1 (current)
+        tree.add_child(0, 3.0, {tgt_key: "x = 3\n"}, 1, "B", "c2")  # id=2 (lateral)
         tree.active_node_id = 1
 
         engine.tree = tree
@@ -239,7 +240,7 @@ class TestDoBacktrack:
         assert engine.best_score == 3.0
         assert engine.tree.active_node_id == 2
         assert engine.tree.nodes[1].abandoned is True
-        content = engine.target_file.read_text()
+        content = (tmp_work_dir / "target" / "solution.py").read_text()
         assert "x = 3" in content
 
 
@@ -335,16 +336,17 @@ class TestPrintReport:
 class TestBacktrackResume:
     def test_loads_existing_tree(self, tmp_work_dir):
         """On resume with existing tree.json, tree state should be restored."""
+        tgt_key = "target/solution.py"
         # Create tree.json
         tree = SearchTree(tmp_work_dir / "tree.json")
-        tree.create_root(1.0, "x = 1\n")
-        tree.add_child(0, 5.0, "x = 5\n", 1, "Explorer", "test")
+        tree.create_root(1.0, {tgt_key: "x = 1\n"})
+        tree.add_child(0, 5.0, {tgt_key: "x = 5\n"}, 1, "Explorer", "test")
         tree.backtrack_count = 1
         tree._save()
 
         # Create board.json for resume
         board_data = {
-            "meta": {"task": "solution.py|python eval.py|maximize"},
+            "meta": {"task": "target/solution.py|python eval.py|maximize"},
             "findings": [{
                 "agent": "Explorer", "round": 1, "experiment": 1,
                 "score": 5.0, "baseline": 1.0, "delta": 4.0,
@@ -368,17 +370,18 @@ class TestBacktrackResume:
 
     def test_rebuilds_on_hash_mismatch(self, tmp_work_dir):
         """If file content doesn't match tree hash, rebuild tree."""
+        tgt_key = "target/solution.py"
         # Create tree with content "x = 5\n"
         tree = SearchTree(tmp_work_dir / "tree.json")
-        tree.create_root(1.0, "x = 1\n")
-        tree.add_child(0, 5.0, "x = 5\n", 1, "Explorer", "test")
+        tree.create_root(1.0, {tgt_key: "x = 1\n"})
+        tree.add_child(0, 5.0, {tgt_key: "x = 5\n"}, 1, "Explorer", "test")
         tree._save()
 
         # But actual file has different content
         (tmp_work_dir / "target" / "solution.py").write_text("x = 99\n")
 
         board_data = {
-            "meta": {"task": "solution.py|python eval.py|maximize"},
+            "meta": {"task": "target/solution.py|python eval.py|maximize"},
             "findings": [{
                 "agent": "Explorer", "round": 1, "experiment": 1,
                 "score": 5.0, "baseline": 1.0, "delta": 4.0,
@@ -398,7 +401,7 @@ class TestBacktrackResume:
 
         # Tree should have been rebuilt with root score matching current eval
         assert engine.tree is not None
-        assert engine.tree.nodes[0].content == "x = 99\n"
+        assert engine.tree.nodes[0].content == {tgt_key: "x = 99\n"}
 
 
 class TestBacktrackConfig:

@@ -9,7 +9,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/ac1b/swarm-research?style=flat-square&color=gold)](https://github.com/ac1b/swarm-research/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-green?style=flat-square)](https://python.org)
-[![Tests](https://img.shields.io/badge/Tests-55%20passed-brightgreen?style=flat-square)](#-tests)
+[![Tests](https://img.shields.io/badge/Tests-88%20passed-brightgreen?style=flat-square)](#-tests)
 
 Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) and [MiroFish](https://github.com/666ghj/MiroFish).
 
@@ -109,7 +109,7 @@ Description of what to optimize and any constraints.
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `target` | *required* | Path to the file agents will modify |
+| `target` | *required* | Path to file(s) agents modify. List for multi-file: `[a.py, b.py]` |
 | `eval` | *required* | Command that outputs a numeric score |
 | `direction` | `maximize` | `maximize` or `minimize` the score |
 | `rounds` | `10` | Number of optimization rounds |
@@ -161,6 +161,7 @@ DONE
 | **Phase-aware prompts** | Agents know if it's early exploration or late refinement. |
 | **Per-agent memory** | Each agent remembers its own experiment history. |
 | **Resume** | Crash? Just re-run. Picks up from `board.json` + `tree.json`. |
+| **Multi-file targets** | Optimize across multiple files simultaneously. `target: [a.py, b.py]` |
 | **Diff mode** | For large files: SEARCH/REPLACE blocks instead of full rewrites. |
 | **Any LLM** | Anthropic, OpenAI, or any OpenAI-compatible API. |
 
@@ -191,9 +192,10 @@ AGENTS = [
 ## 🧪 Tests
 
 ```bash
-python3 -m pytest tests/ -v          # all 55 tests
+python3 -m pytest tests/ -v          # all 88 tests
 python3 -m pytest tests/test_tree.py  # SearchTree unit tests (33)
 python3 -m pytest tests/test_backtrack_engine.py  # engine integration (22)
+python3 -m pytest tests/test_multifile.py  # multi-file target tests (33)
 ```
 
 ## 📁 Project structure
@@ -206,9 +208,11 @@ swarm-research/
 ├── tests/
 │   ├── test_tree.py       # SearchTree unit tests
 │   ├── test_backtrack_engine.py
+│   ├── test_multifile.py  # Multi-file target tests
 │   └── conftest.py
 └── examples/
     ├── speed-opt/         # Python function speed optimization
+    ├── multi-opt/         # Multi-file sorting (algorithm + config)
     ├── algo-opt/          # Bin packing algorithm optimization
     ├── config-opt/        # Cache configuration tuning
     ├── compress-opt/      # Compression algorithm from scratch
@@ -218,9 +222,9 @@ swarm-research/
 
 ## 🔮 Roadmap
 
+- [x] Multi-file targets — optimize across multiple files simultaneously
 - [ ] Agent evolution — bad strategies die, good ones mutate and reproduce
 - [ ] Smart scheduling — board influences which agent goes next
-- [ ] Multi-file targets — optimize across multiple files simultaneously
 
 ## 📄 License
 

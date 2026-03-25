@@ -112,7 +112,11 @@ class SearchTree:
     @staticmethod
     def _content_hash(content):
         import hashlib
-        return hashlib.sha256(content.encode()).hexdigest()[:16]
+        if isinstance(content, dict):
+            combined = "".join(f"{k}:{v}" for k, v in sorted(content.items()))
+        else:
+            combined = content
+        return hashlib.sha256(combined.encode()).hexdigest()[:16]
 
     def _save(self):
         data = {
@@ -391,7 +395,10 @@ def parse_task(task_path):
             for line in parts[1].strip().split("\n"):
                 if ":" in line:
                     key, val = line.split(":", 1)
-                    config[key.strip()] = val.strip()
+                    val = val.strip()
+                    if val.startswith("[") and val.endswith("]"):
+                        val = [item.strip() for item in val[1:-1].split(",")]
+                    config[key.strip()] = val
             body = parts[2].strip()
 
     config["description"] = body
@@ -564,11 +571,30 @@ USER_TEMPLATE = """## Task
 {backtrack_context}
 Experiment #{experiment_num}. Propose your next change."""
 
+USER_TEMPLATE_MULTI = """## Task
+{task_desc}
 
-def build_prompt(agent, task_desc, target_content, target_name,
-                 board, memory_text, experiment_num, use_diff=False, phase_hint="",
+## Target files
+{target_files_block}
+
+## Board (shared findings from all agents)
+{board_summary}
+
+## Your experiment memory
+{memory_text}
+
+{phase_hint}
+{backtrack_context}
+Experiment #{experiment_num}. Propose your next change."""
+
+
+def build_prompt(agent, task_desc, target_contents, board, memory_text,
+                 experiment_num, use_diff=False, phase_hint="",
                  backtrack_context=""):
-    # type: (AgentConfig, str, str, str, Board, str, int, bool, str, str) -> List[dict]
+    # type: (AgentConfig, str, Dict[str, str], Board, str, int, bool, str, str) -> List[dict]
+
+    keys = list(target_contents.keys())
+    is_multi = len(keys) > 1
 
     failed_list = board.failed_approaches()
     failed_block = ""
@@ -582,13 +608,34 @@ def build_prompt(agent, task_desc, target_content, target_name,
         failed_block=failed_block,
     )
 
-    user = USER_TEMPLATE.format(
-        task_desc=task_desc, target_name=target_name,
-        target_content=target_content, board_summary=board.summary(),
-        memory_text=memory_text, phase_hint=phase_hint,
-        backtrack_context=backtrack_context,
-        experiment_num=experiment_num,
-    )
+    if is_multi:
+        if use_diff:
+            system += ("\n\nMULTI-FILE TARGET: Add the file path after SEARCH:\n"
+                       "<<<< SEARCH path/to/file.py\n"
+                       "If no path is given, the first file is assumed.")
+        else:
+            system += ("\n\nMULTI-FILE TARGET: Label each modified file block:\n"
+                       "```file:path/to/file.py\n...\n```\n"
+                       "Only output files you changed. Unchanged files are kept as-is.")
+
+    if is_multi:
+        files_block = ""
+        for key in keys:
+            files_block += f"\n### {key}\n```\n{target_contents[key]}```\n"
+        user = USER_TEMPLATE_MULTI.format(
+            task_desc=task_desc, target_files_block=files_block,
+            board_summary=board.summary(), memory_text=memory_text,
+            phase_hint=phase_hint, backtrack_context=backtrack_context,
+            experiment_num=experiment_num,
+        )
+    else:
+        key = keys[0]
+        user = USER_TEMPLATE.format(
+            task_desc=task_desc, target_name=key,
+            target_content=target_contents[key], board_summary=board.summary(),
+            memory_text=memory_text, phase_hint=phase_hint,
+            backtrack_context=backtrack_context, experiment_num=experiment_num,
+        )
 
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
@@ -602,47 +649,65 @@ def strip_think_tags(text):
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
-def apply_diffs(original, response):
-    # type: (str, str) -> Optional[str]
-    """Apply SEARCH/REPLACE diff blocks to original content. Returns new content or None."""
+def apply_diffs(originals, response):
+    # type: (Dict[str, str], str) -> Optional[Dict[str, str]]
+    """Apply SEARCH/REPLACE diff blocks to original contents.
+
+    Args:
+        originals: Dict mapping rel_path -> content
+        response: LLM response text
+
+    Returns Dict with applied changes, or None if no valid changes.
+    """
     cleaned = strip_think_tags(response)
 
-    # Find all SEARCH/REPLACE blocks
-    pattern = r"<<<<\s*SEARCH\s*\n(.*?)\n====\s*\n(.*?)\n>>>>\s*REPLACE"
+    # Find all SEARCH/REPLACE blocks with optional file path
+    pattern = r"<<<<\s*SEARCH\s*([\w/.\-]*)\s*\n(.*?)\n====\s*\n(.*?)\n>>>>\s*REPLACE"
     blocks = re.findall(pattern, cleaned, re.DOTALL)
 
     if not blocks:
         return None
 
-    result = original
-    for search, replace in blocks:
+    result = dict(originals)
+    keys = list(originals.keys())
+
+    for filepath, search, replace in blocks:
+        filepath = filepath.strip()
+        if not filepath:
+            filepath = keys[0]
+
+        if filepath not in result:
+            print(f"    diff error: unknown file {filepath!r}")
+            return None
+
         search = search.rstrip("\n")
         replace = replace.rstrip("\n")
-        if search in result:
-            result = result.replace(search, replace, 1)
+        content = result[filepath]
+
+        if search in content:
+            result[filepath] = content.replace(search, replace, 1)
         else:
-            # Try fuzzy match: strip leading/trailing whitespace per line
+            # Try fuzzy match: strip trailing whitespace per line
             search_stripped = "\n".join(l.rstrip() for l in search.split("\n"))
-            result_stripped_lines = result.split("\n")
-            # Try to find a matching region
+            content_lines = content.split("\n")
             found = False
-            for i in range(len(result_stripped_lines)):
-                candidate_lines = result_stripped_lines[i:i + search.count("\n") + 1]
+            for i in range(len(content_lines)):
+                candidate_lines = content_lines[i:i + search.count("\n") + 1]
                 candidate = "\n".join(l.rstrip() for l in candidate_lines)
                 if candidate == search_stripped:
-                    original_lines = result.split("\n")
+                    original_lines = content.split("\n")
                     new_lines = (original_lines[:i] +
                                 replace.split("\n") +
                                 original_lines[i + len(candidate_lines):])
-                    result = "\n".join(new_lines)
+                    result[filepath] = "\n".join(new_lines)
                     found = True
                     break
             if not found:
-                print(f"    diff mismatch: could not find block starting with: {search[:80]!r}")
-                return None  # search text not found
+                print(f"    diff mismatch in {filepath}: {search[:80]!r}")
+                return None
 
-    if result == original:
-        return None  # no actual changes
+    if all(result[k] == originals[k] for k in originals):
+        return None
 
     return result
 
@@ -659,6 +724,36 @@ def extract_file_content(response):
     blocks = re.findall(r"```\w*\s*\n(.*?)```", cleaned, re.DOTALL)
     if blocks:
         return max(blocks, key=len)
+    return None
+
+
+def extract_file_contents(originals, response):
+    # type: (Dict[str, str], str) -> Optional[Dict[str, str]]
+    """Extract full-file contents from LLM response (multi-file aware).
+
+    Looks for ```file:path blocks first, falls back to single-file extraction.
+    Returns merged Dict with originals for unchanged files, or None.
+    """
+    cleaned = strip_think_tags(response)
+    keys = list(originals.keys())
+
+    # Try ```file:path blocks (multi-file format)
+    file_blocks = re.findall(r"```file:(\S+)\s*\n(.*?)```", cleaned, re.DOTALL)
+    if file_blocks:
+        result = dict(originals)
+        for path, content in file_blocks:
+            if path in result:
+                result[path] = content
+        if all(result[k] == originals[k] for k in originals):
+            return None
+        return result
+
+    # Single-file fallback
+    if len(keys) == 1:
+        content = extract_file_content(response)
+        if content:
+            return {keys[0]: content}
+
     return None
 
 
@@ -725,18 +820,23 @@ class SwarmEngine:
         self.work_dir = self.task_path.parent
         self.task = parse_task(self.task_path)
 
-        self.target_file = self.work_dir / self.task.get("target", "target/main.txt")
+        raw_target = self.task.get("target", "target/main.txt")
+        if isinstance(raw_target, list):
+            self.target_files = [self.work_dir / t for t in raw_target]
+        else:
+            self.target_files = [self.work_dir / raw_target]
         self.eval_cmd = self.task.get("eval", "python eval.py")
         self.direction = self.task.get("direction", "maximize")
-        self._task_fingerprint = f"{self.target_file.name}|{self.eval_cmd}|{self.direction}"
+        target_names = sorted(str(f.relative_to(self.work_dir)) for f in self.target_files)
+        self._task_fingerprint = f"{'|'.join(target_names)}|{self.eval_cmd}|{self.direction}"
         self.rounds = int(self.task.get("rounds", "10"))
         self.timeout = int(self.task.get("timeout", "300"))
         self.eval_runs = int(self.task.get("eval_runs", "1"))
 
         # v0.3: diff mode for files > 50 lines
-        target_lines = self.target_file.read_text().count("\n") if self.target_file.exists() else 0
-        self.use_diff = self.task.get("mode", "auto") == "diff" or \
-                        (self.task.get("mode", "auto") == "auto" and target_lines > 50)
+        mode = self.task.get("mode", "auto")
+        total_lines = sum(f.read_text().count("\n") for f in self.target_files if f.exists())
+        self.use_diff = mode == "diff" or (mode == "auto" and total_lines > 50)
 
         # v0.3: parallel mode
         self.parallel = self.task.get("parallel", "false").lower() == "true"
@@ -762,7 +862,7 @@ class SwarmEngine:
         self.backtrack_count = 0
         self.tree = None  # type: Optional[SearchTree]
         self.global_best_score = None  # type: Optional[float]
-        self.global_best_content = None  # type: Optional[str]
+        self.global_best_content = None  # type: Optional[Dict[str, str]]
 
         if self.backtrack > 0 and 0 < self.early_stop <= self.backtrack:
             print(f"WARNING: early_stop ({self.early_stop}) <= backtrack ({self.backtrack}). "
@@ -776,6 +876,19 @@ class SwarmEngine:
         if self.direction == "minimize":
             return new < old
         return new > old
+
+    def _read_targets(self):
+        # type: () -> Dict[str, str]
+        """Read all target files. Returns Dict[rel_path, content]."""
+        return {str(f.relative_to(self.work_dir)): f.read_text() for f in self.target_files}
+
+    def _write_targets(self, contents):
+        # type: (Dict[str, str]) -> None
+        """Write target file contents. contents: Dict[rel_path, content]."""
+        for rel_path, content in contents.items():
+            path = self.work_dir / rel_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content)
 
     def _phase_hint(self, round_num):
         progress = round_num / self.rounds
@@ -791,9 +904,9 @@ class SwarmEngine:
         wd = work_dir or self.work_dir
         return run_eval(self.eval_cmd, wd, self.timeout, self.eval_runs)
 
-    def _run_single_agent(self, agent, round_num, target_content):
-        # type: (AgentConfig, int, str) -> Optional[tuple]
-        """Run one agent's experiment. Returns (Finding, new_content) or None."""
+    def _run_single_agent(self, agent, round_num, target_contents):
+        # type: (AgentConfig, int, Dict[str, str]) -> Optional[tuple]
+        """Run one agent's experiment. Returns (Finding, new_contents) or None."""
 
         with self._lock:
             self.experiment_count += 1
@@ -803,8 +916,8 @@ class SwarmEngine:
         print(f"\n  [{agent.name}] experiment #{exp_num}")
 
         messages = build_prompt(
-            agent, self.task["description"], target_content,
-            self.target_file.name, self.board,
+            agent, self.task["description"], target_contents,
+            self.board,
             self.memory.format_for_prompt(agent.name),
             exp_num, self.use_diff,
             phase_hint=self._phase_hint(round_num),
@@ -823,14 +936,14 @@ class SwarmEngine:
 
         # Apply changes — diff mode or full-file mode
         if self.use_diff:
-            new_content = apply_diffs(target_content, reply)
-            if new_content is None:
+            new_contents = apply_diffs(target_contents, reply)
+            if new_contents is None:
                 # Fallback to full-file extraction
-                new_content = extract_file_content(reply)
+                new_contents = extract_file_contents(target_contents, reply)
         else:
-            new_content = extract_file_content(reply)
+            new_contents = extract_file_contents(target_contents, reply)
 
-        if not new_content:
+        if not new_contents:
             print(f"    could not extract changes from response")
             return (Finding(
                 agent=agent.name, round=round_num, experiment=exp_num,
@@ -841,32 +954,31 @@ class SwarmEngine:
                 timestamp=datetime.now().isoformat(),
             ), None)
 
-        if new_content.strip() == target_content.strip():
+        if all(new_contents.get(k, "").strip() == v.strip()
+               for k, v in target_contents.items()):
             print(f"    no changes proposed")
             return None, None
 
         if self.parallel:
-            # Parallel: eval in a temp copy
             finding = self._eval_in_copy(
-                agent, round_num, exp_num, target_content,
-                new_content, reasoning, change_summary, current_best,
+                agent, round_num, exp_num, target_contents,
+                new_contents, reasoning, change_summary, current_best,
             )
         else:
-            # Sequential: eval in place
             finding = self._eval_in_place(
-                agent, round_num, exp_num, target_content,
-                new_content, reasoning, change_summary, current_best,
+                agent, round_num, exp_num, target_contents,
+                new_contents, reasoning, change_summary, current_best,
             )
-        return (finding, new_content) if finding else (None, None)
+        return (finding, new_contents) if finding else (None, None)
 
-    def _eval_in_place(self, agent, round_num, exp_num, target_content,
-                        new_content, reasoning, change_summary, current_best):
-        """Sequential mode: write file, eval, keep or revert."""
-        self.target_file.write_text(new_content)
+    def _eval_in_place(self, agent, round_num, exp_num, target_contents,
+                        new_contents, reasoning, change_summary, current_best):
+        """Sequential mode: write files, eval, keep or revert."""
+        self._write_targets(new_contents)
         score = self._eval()
 
         if score is None:
-            self.target_file.write_text(target_content)
+            self._write_targets(target_contents)
             print(f"    CRASH  | {change_summary[:80]}")
             return Finding(
                 agent=agent.name, round=round_num, experiment=exp_num,
@@ -889,16 +1001,16 @@ class SwarmEngine:
             git_commit(self.work_dir, f"R{round_num} {agent.name}: {change_summary[:80]}")
             if self.tree:
                 self.tree.add_child(
-                    self.tree.active_node_id, score, new_content,
+                    self.tree.active_node_id, score, new_contents,
                     round_created=round_num, agent=agent.name,
                     change_summary=change_summary,
                 )
                 if self.global_best_score is None or self.is_better(score, self.global_best_score):
                     self.global_best_score = score
-                    self.global_best_content = new_content
+                    self.global_best_content = new_contents
             print(f"    KEPT     score={score:.4f}  delta={delta:+.4f}")
         else:
-            self.target_file.write_text(target_content)
+            self._write_targets(target_contents)
             print(f"    reverted score={score:.4f}  delta={delta:+.4f}")
 
         print(f"    change: {change_summary[:100]}")
@@ -912,8 +1024,8 @@ class SwarmEngine:
             timestamp=datetime.now().isoformat(),
         )
 
-    def _eval_in_copy(self, agent, round_num, exp_num, target_content,
-                       new_content, reasoning, change_summary, current_best):
+    def _eval_in_copy(self, agent, round_num, exp_num, target_contents,
+                       new_contents, reasoning, change_summary, current_best):
         """Parallel mode: eval in a temp directory, merge winner after."""
         import tempfile
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -928,9 +1040,11 @@ class SwarmEngine:
                 else:
                     shutil.copy2(item, dest)
 
-            # Write modified file
-            tmp_target = tmp_path / self.target_file.relative_to(self.work_dir)
-            tmp_target.write_text(new_content)
+            # Write all modified target files
+            for rel_path, content in new_contents.items():
+                tmp_target = tmp_path / rel_path
+                tmp_target.parent.mkdir(parents=True, exist_ok=True)
+                tmp_target.write_text(content)
 
             score = self._eval(tmp_path)
 
@@ -967,7 +1081,10 @@ class SwarmEngine:
         par_label = "parallel" if self.parallel else "sequential"
         print(f"SwarmResearch Engine v0.4 [{mode_label}, {par_label}]")
         print(f"  Task:      {self.task_path}")
-        print(f"  Target:    {self.target_file}")
+        if len(self.target_files) == 1:
+            print(f"  Target:    {self.target_files[0]}")
+        else:
+            print(f"  Targets:   {', '.join(str(f) for f in self.target_files)}")
         print(f"  Eval:      {self.eval_cmd}")
         print(f"  Direction: {self.direction}")
         print(f"  Rounds:    {self.rounds}")
@@ -1022,24 +1139,32 @@ class SwarmEngine:
         # Initialize search tree for backtracking
         if self.backtrack > 0:
             tree_path = self.work_dir / "tree.json"
+            current_contents = self._read_targets()
             if tree_path.exists() and self.board.findings:
                 self.tree = SearchTree(tree_path)
                 self.backtrack_count = self.tree.backtrack_count
-                current_hash = SearchTree._content_hash(self.target_file.read_text())
+                # Migrate old string content to dict format
+                first_key = list(current_contents.keys())[0]
+                for node in self.tree.nodes.values():
+                    if isinstance(node.content, str):
+                        node.content = {first_key: node.content}
+                        node.content_hash = SearchTree._content_hash(node.content)
+                self.tree._save()
+                current_hash = SearchTree._content_hash(current_contents)
                 active_node = self.tree.nodes.get(self.tree.active_node_id)
                 if active_node and active_node.content_hash != current_hash:
                     print(f"  Tree hash mismatch, rebuilding tree.")
                     tree_path.unlink()
                     self.tree = SearchTree(tree_path)
-                    self.tree.create_root(self.best_score, self.target_file.read_text())
+                    self.tree.create_root(self.best_score, current_contents)
                 else:
                     print(f"  Resumed tree: {len(self.tree.nodes)} nodes, "
                           f"{self.backtrack_count} backtracks")
             else:
                 self.tree = SearchTree(tree_path)
-                self.tree.create_root(self.best_score, self.target_file.read_text())
+                self.tree.create_root(self.best_score, current_contents)
             self.global_best_score = self.best_score
-            self.global_best_content = self.target_file.read_text()
+            self.global_best_content = current_contents
 
         for round_num in range(self.start_round, self.rounds + 1):
             print(f"{'=' * 60}")
@@ -1047,12 +1172,12 @@ class SwarmEngine:
             print(f"{'=' * 60}")
 
             score_before = self.best_score
-            target_content = self.target_file.read_text()
+            target_contents = self._read_targets()
 
             if self.parallel:
-                self._run_round_parallel(round_num, target_content)
+                self._run_round_parallel(round_num, target_contents)
             else:
-                self._run_round_sequential(round_num, target_content)
+                self._run_round_sequential(round_num, target_contents)
 
             # Early stopping: track consecutive rounds without improvement
             improved = self.is_better(self.best_score, score_before)
@@ -1075,7 +1200,7 @@ class SwarmEngine:
         # Restore global best if it's better than current
         if self.tree and self.global_best_content is not None:
             if self.is_better(self.global_best_score, self.best_score):
-                self.target_file.write_text(self.global_best_content)
+                self._write_targets(self.global_best_content)
                 self.best_score = self.global_best_score
                 git_commit(self.work_dir,
                            f"Restore global best ({self.global_best_score:.4f})")
@@ -1085,26 +1210,26 @@ class SwarmEngine:
         self._print_report()
         self._generate_report()
 
-    def _run_round_sequential(self, round_num, target_content):
+    def _run_round_sequential(self, round_num, target_contents):
         """Run agents one by one. Each builds on the previous kept changes."""
         if self.tree:
             self.tree.record_visit(self.tree.active_node_id)
         for agent in self.agents:
-            target_content = self.target_file.read_text()  # re-read after possible keeps
-            finding, _ = self._run_single_agent(agent, round_num, target_content)
+            target_contents = self._read_targets()  # re-read after possible keeps
+            finding, _ = self._run_single_agent(agent, round_num, target_contents)
             if finding:
                 self.board.add(finding)
                 self._save_agent_memory(finding)
 
-    def _run_round_parallel(self, round_num, target_content):
+    def _run_round_parallel(self, round_num, target_contents):
         """Run all agents in parallel. Best result wins the round."""
         if self.tree:
             self.tree.record_visit(self.tree.active_node_id)
-        results = []  # list of (finding, new_content)
+        results = []  # list of (finding, new_contents)
 
         with ThreadPoolExecutor(max_workers=len(self.agents)) as pool:
             futures = {
-                pool.submit(self._run_single_agent, agent, round_num, target_content): agent
+                pool.submit(self._run_single_agent, agent, round_num, target_contents): agent
                 for agent in self.agents
             }
             for future in as_completed(futures):
@@ -1120,24 +1245,23 @@ class SwarmEngine:
         candidates = [(f, c) for f, c in results if f.kept and c]
 
         if candidates:
-            winner_finding, winner_content = max(candidates, key=lambda x: x[0].delta)
+            winner_finding, winner_contents = max(candidates, key=lambda x: x[0].delta)
             print(f"\n  >> Round winner: {winner_finding.agent} (delta={winner_finding.delta:+.4f})")
 
-            # Apply winner's content to the actual target file
-            self.target_file.write_text(winner_content)
+            self._write_targets(winner_contents)
             with self._lock:
                 self.best_score = winner_finding.score
             git_commit(self.work_dir, f"R{round_num} {winner_finding.agent}: {winner_finding.change_summary[:80]}")
             if self.tree:
                 self.tree.add_child(
-                    self.tree.active_node_id, winner_finding.score, winner_content,
+                    self.tree.active_node_id, winner_finding.score, winner_contents,
                     round_created=round_num, agent=winner_finding.agent,
                     change_summary=winner_finding.change_summary,
                 )
                 if (self.global_best_score is None
                         or self.is_better(winner_finding.score, self.global_best_score)):
                     self.global_best_score = winner_finding.score
-                    self.global_best_content = winner_content
+                    self.global_best_content = winner_contents
 
             for f, _ in results:
                 f_copy = Finding(**asdict(f))
@@ -1174,7 +1298,7 @@ class SwarmEngine:
 
         self.tree.mark_abandoned(current_id)
 
-        self.target_file.write_text(target_node.content)
+        self._write_targets(target_node.content)
         self.best_score = target_node.score
 
         self.tree.active_node_id = target_id
