@@ -1,8 +1,8 @@
 """
-SwarmResearch Engine v0.4
+SwarmResearch Engine v0.6
 
 Autonomous multi-agent optimization framework.
-v0.4: resume, phase-aware prompting, per-agent memory, LLM report.
+v0.6: multi-file targets, backtracking/tree search, resume, phase-aware prompting.
 """
 
 import json
@@ -86,7 +86,7 @@ class TreeNode:
     id: int
     parent_id: Optional[int]
     score: float
-    content: str
+    content: object  # str (legacy single-file) or Dict[str, str] (multi-file)
     content_hash: str
     round_created: int
     agent: str
@@ -307,7 +307,7 @@ class Board:
 
         if failed:
             lines.append(f"\n=== REVERTED (DO NOT repeat) [{len(failed)} total] ===")
-            for f in failed[-10:]:
+            for f in failed[-last_n:]:
                 lines.append(
                     f"  R{f.round} {f.agent}: {f.change_summary[:150]} "
                     f"| score={f.score:.4f} ({f.delta:+.4f})"
@@ -695,10 +695,9 @@ def apply_diffs(originals, response):
                 candidate_lines = content_lines[i:i + search.count("\n") + 1]
                 candidate = "\n".join(l.rstrip() for l in candidate_lines)
                 if candidate == search_stripped:
-                    original_lines = content.split("\n")
-                    new_lines = (original_lines[:i] +
+                    new_lines = (content_lines[:i] +
                                 replace.split("\n") +
-                                original_lines[i + len(candidate_lines):])
+                                content_lines[i + len(candidate_lines):])
                     result[filepath] = "\n".join(new_lines)
                     found = True
                     break
@@ -812,6 +811,13 @@ def git_commit(work_dir, message):
 # ---------------------------------------------------------------------------
 # SwarmEngine v0.3 — parallel agents, diff mode, smart exploration
 # ---------------------------------------------------------------------------
+
+_EVAL_COPY_EXCLUDE = {
+    ".git", "board.json", "agent_memory", "tree.json",
+    "__pycache__", ".venv", "venv", "node_modules", ".mypy_cache",
+    ".pytest_cache", ".ruff_cache",
+}
+
 
 class SwarmEngine:
     def __init__(self, task_path):
@@ -971,6 +977,33 @@ class SwarmEngine:
             )
         return (finding, new_contents) if finding else (None, None)
 
+    def _delta(self, score, baseline):
+        if self.direction == "minimize":
+            return baseline - score
+        return score - baseline
+
+    def _crash_finding(self, agent, round_num, exp_num, reasoning, change_summary, current_best):
+        return Finding(
+            agent=agent.name, round=round_num, experiment=exp_num,
+            score=0, baseline=current_best, delta=0,
+            kept=False, reasoning=reasoning,
+            description=f"CRASH: {reasoning[:100]}",
+            change_summary=change_summary,
+            timestamp=datetime.now().isoformat(),
+        )
+
+    def _record_kept(self, score, contents, round_num, agent_name, change_summary):
+        git_commit(self.work_dir, f"R{round_num} {agent_name}: {change_summary[:80]}")
+        if self.tree:
+            self.tree.add_child(
+                self.tree.active_node_id, score, contents,
+                round_created=round_num, agent=agent_name,
+                change_summary=change_summary,
+            )
+            if self.global_best_score is None or self.is_better(score, self.global_best_score):
+                self.global_best_score = score
+                self.global_best_content = contents
+
     def _eval_in_place(self, agent, round_num, exp_num, target_contents,
                         new_contents, reasoning, change_summary, current_best):
         """Sequential mode: write files, eval, keep or revert."""
@@ -980,34 +1013,15 @@ class SwarmEngine:
         if score is None:
             self._write_targets(target_contents)
             print(f"    CRASH  | {change_summary[:80]}")
-            return Finding(
-                agent=agent.name, round=round_num, experiment=exp_num,
-                score=0, baseline=current_best, delta=0,
-                kept=False, reasoning=reasoning,
-                description=f"CRASH: {reasoning[:100]}",
-                change_summary=change_summary,
-                timestamp=datetime.now().isoformat(),
-            )
+            return self._crash_finding(agent, round_num, exp_num, reasoning, change_summary, current_best)
 
-        delta = (score - current_best)
-        if self.direction == "minimize":
-            delta = (current_best - score)
-
+        delta = self._delta(score, current_best)
         kept = self.is_better(score, current_best)
 
         if kept:
             with self._lock:
                 self.best_score = score
-            git_commit(self.work_dir, f"R{round_num} {agent.name}: {change_summary[:80]}")
-            if self.tree:
-                self.tree.add_child(
-                    self.tree.active_node_id, score, new_contents,
-                    round_created=round_num, agent=agent.name,
-                    change_summary=change_summary,
-                )
-                if self.global_best_score is None or self.is_better(score, self.global_best_score):
-                    self.global_best_score = score
-                    self.global_best_content = new_contents
+            self._record_kept(score, new_contents, round_num, agent.name, change_summary)
             print(f"    KEPT     score={score:.4f}  delta={delta:+.4f}")
         else:
             self._write_targets(target_contents)
@@ -1032,11 +1046,14 @@ class SwarmEngine:
             tmp_path = Path(tmpdir)
             # Copy work_dir contents (excluding .git)
             for item in self.work_dir.iterdir():
-                if item.name in (".git", "board.json", "agent_memory", "tree.json"):
+                if item.name in _EVAL_COPY_EXCLUDE:
                     continue
                 dest = tmp_path / item.name
                 if item.is_dir():
-                    shutil.copytree(item, dest)
+                    shutil.copytree(item, dest,
+                                    ignore=shutil.ignore_patterns(
+                                        "__pycache__", ".git", "node_modules",
+                                        ".venv", "venv"))
                 else:
                     shutil.copy2(item, dest)
 
@@ -1050,19 +1067,9 @@ class SwarmEngine:
 
         if score is None:
             print(f"    CRASH  | {change_summary[:80]}")
-            return Finding(
-                agent=agent.name, round=round_num, experiment=exp_num,
-                score=0, baseline=current_best, delta=0,
-                kept=False, reasoning=reasoning,
-                description=f"CRASH: {reasoning[:100]}",
-                change_summary=change_summary,
-                timestamp=datetime.now().isoformat(),
-            )
+            return self._crash_finding(agent, round_num, exp_num, reasoning, change_summary, current_best)
 
-        delta = (score - current_best)
-        if self.direction == "minimize":
-            delta = (current_best - score)
-
+        delta = self._delta(score, current_best)
         kept = self.is_better(score, current_best)
         print(f"    {'KEPT' if kept else 'reverted':8s} score={score:.4f}  delta={delta:+.4f}")
         print(f"    change: {change_summary[:100]}")
@@ -1079,7 +1086,7 @@ class SwarmEngine:
     def run(self):
         mode_label = "diff" if self.use_diff else "full-file"
         par_label = "parallel" if self.parallel else "sequential"
-        print(f"SwarmResearch Engine v0.4 [{mode_label}, {par_label}]")
+        print(f"SwarmResearch Engine v0.6 [{mode_label}, {par_label}]")
         print(f"  Task:      {self.task_path}")
         if len(self.target_files) == 1:
             print(f"  Target:    {self.target_files[0]}")
@@ -1251,17 +1258,8 @@ class SwarmEngine:
             self._write_targets(winner_contents)
             with self._lock:
                 self.best_score = winner_finding.score
-            git_commit(self.work_dir, f"R{round_num} {winner_finding.agent}: {winner_finding.change_summary[:80]}")
-            if self.tree:
-                self.tree.add_child(
-                    self.tree.active_node_id, winner_finding.score, winner_contents,
-                    round_created=round_num, agent=winner_finding.agent,
-                    change_summary=winner_finding.change_summary,
-                )
-                if (self.global_best_score is None
-                        or self.is_better(winner_finding.score, self.global_best_score)):
-                    self.global_best_score = winner_finding.score
-                    self.global_best_content = winner_contents
+            self._record_kept(winner_finding.score, winner_contents, round_num,
+                              winner_finding.agent, winner_finding.change_summary)
 
             for f, _ in results:
                 f_copy = Finding(**asdict(f))
