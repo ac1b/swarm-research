@@ -43,11 +43,11 @@ SwarmResearch adds **tree search with backtracking**: when agents hit a plateau,
                                   │
         ┌─────────────────────────┼─────────────────────────┐
         v                         v                         v
-  ┌───────────┐          ┌──────────────┐          ┌──────────────┐
-  │  Explorer  │          │  Optimizer   │          │ Synthesizer  │
-  │ temp = 0.9 │          │ temp = 0.3   │          │ temp = 0.6   │
-  │ bold moves │          │ refinement   │          │ combine ideas│
-  └─────┬─────┘          └──────┬───────┘          └──────┬───────┘
+  ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
+  │   Explorer   │       │  Optimizer   │       │ Synthesizer  │
+  │  temp = 0.9  │       │  temp = 0.3  │       │  temp = 0.6  │
+  │  bold moves  │       │  refinement  │       │ combine ideas│
+  └──────┬───────┘       └──────┬───────┘       └──────┬───────┘
         │                       │                         │
         └───────────┬───────────┴─────────┬───────────────┘
                     v                     v
