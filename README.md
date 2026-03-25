@@ -107,8 +107,24 @@ target: [target/solver.py, target/moves.py, target/config.py]
 ### CLI overrides
 
 ```bash
-python3 run.py task.md --rounds 15 --backtrack 3 --max-backtracks 5 --no-report
+python3 run.py task.md --rounds 15 --backtrack 3 --max-backtracks 5
+python3 run.py task.md --parallel --early-stop 3 --mode diff
+python3 run.py task.md --eval-runs 3 --timeout 60 --no-report
 ```
+
+All YAML options can be overridden from the command line:
+
+| Flag | Description |
+|------|-------------|
+| `--rounds N` | Number of optimization rounds |
+| `--backtrack N` | Backtrack after N stale rounds |
+| `--max-backtracks N` | Max backtracks per run |
+| `--parallel` | Run agents in parallel |
+| `--early-stop N` | Stop after N stale rounds |
+| `--mode {full,diff,auto}` | Code edit mode |
+| `--eval-runs N` | Eval runs to average |
+| `--timeout N` | Eval timeout (seconds) |
+| `--no-report` | Skip LLM report generation |
 
 ## 📊 Results
 
@@ -133,23 +149,47 @@ DONE
   Backtracks: 2
 ```
 
-### tsp-opt example (multi-file)
+### game-ai example (Othello AI, 2 files)
 
-40-city TSP across 3 files — solver, moves, config (Kimi K2.5, 8 rounds, backtrack=3):
+Build an Othello AI to beat 4 opponents — random, greedy, positional, minimax (Kimi K2.5, 1 round):
+
+```
+Baseline:   25.62 (random moves)
+
+ROUND 1  │ Optimizer KEPT  score=45.00  (+19.4)   ← positional weights
+         │ Synth     KEPT  score=60.62  (+15.6)   ← mobility + corner eval
+
+DONE
+  Final:      60.62 (+136.6%)
+```
+
+### scheduler example (3 files, minimize, parallel)
+
+Minimize weighted tardiness on 5 job shop instances — 10 to 50 jobs (Kimi K2.5, 3 rounds):
+
+```
+Baseline:   213,837 (FIFO dispatching)
+
+ROUND 1  │ Optimizer KEPT  score=69,053   (-67.7%)  ← EDD dispatching
+ROUND 2  │ Optimizer KEPT  score=63,422   (-70.3%)  ← weighted slack priority
+ROUND 3  │ Synth     KEPT  score=60,617   (-71.7%)  ← refined heuristics
+
+DONE
+  Final:      60,617 (-71.7%)
+```
+
+### tsp-opt example (3 files, minimize, diff mode)
+
+40-city TSP across 3 files — solver, moves, config (Kimi K2.5, 3 rounds):
 
 ```
 Baseline:   592.71 (nearest-neighbor + random swaps)
 
-ROUND 1  │ Explorer  KEPT  score=497.66  (-16.0%)  ← 2-opt + SA
-ROUND 2-4│ all reverted... plateau
-         │ BACKTRACK #1: 497.66 → 592.71 (new branch)
-ROUND 5  │ 3 agents cascade improvements → 500.45
-ROUND 6  │ Optimizer KEPT  score=493.41  (-16.8%)  ← tuned parameters
+ROUND 1  │ Synth     KEPT  score=497.66  (-16.0%)  ← 2-opt local search
+ROUND 2-3│ all reverted... plateau
 
 DONE
-  Final:      493.41 (-16.8%)
-  Tree nodes: 6
-  Backtracks: 1
+  Final:      497.66 (-16.0%)
 ```
 
 ## 🧬 Key features
@@ -229,7 +269,10 @@ swarm-research/
     ├── config-opt/        # Cache configuration tuning
     ├── compress-opt/      # Compression algorithm from scratch
     ├── bio-opt/           # DNA motif discovery (bioinformatics)
-    └── num-opt/           # Numerical integration accuracy
+    ├── num-opt/           # Numerical integration accuracy
+    ├── game-ai/           # Othello AI vs 4 opponents (strategy + weights)
+    ├── ml-opt/            # Neural net from scratch, no libraries (model + train)
+    └── scheduler/         # Job shop scheduling, NP-hard (scheduler + heuristics + config)
 ```
 
 ## 🔮 Roadmap
