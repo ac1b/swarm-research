@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/hero.jpg" alt="SwarmResearch" width="800">
+
 # 🐝 SwarmResearch
 
 **Autonomous multi-agent optimization with tree search & backtracking**
@@ -23,45 +25,20 @@ Most auto-research tools use a **greedy ratchet** — keep improvements, revert 
 
 SwarmResearch adds **tree search with backtracking**: when agents hit a plateau, the engine rolls back to an earlier state and explores a different optimization path. Combined with multiple agents (Explorer, Optimizer, Synthesizer) sharing findings via a board, this escapes local optima that single-path approaches can't.
 
-> **Input:** a target file + an eval script that outputs a score
-> **Output:** an optimized file + a tree of explored paths
+> **Input:** target file(s) + an eval script that outputs a score
+> **Output:** optimized file(s) + a tree of explored paths
 
 ## 🏗️ Architecture
 
-```
-              ┌───────────────────────────────────────────┐
-              │              Search Tree                  │
-              │                                           │
-              │   [baseline: 81 ops/sec]                  │
-              │      ├── [R1 Explorer +6.0]               │
-              │      │     ├── [R3 Explorer +7.3]         │
-              │      │     │     └── x abandoned          │
-              │      │     └── [R7 Synthesizer +7.1]      │
-              │      │           └── x abandoned          │
-              │      └── ... (new branches)               │
-              └───────────────────────────────────────────┘
-                                  │
-        ┌─────────────────────────┼─────────────────────────┐
-        v                         v                         v
-  ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-  │   Explorer   │       │  Optimizer   │       │ Synthesizer  │
-  │  temp = 0.9  │       │  temp = 0.3  │       │  temp = 0.6  │
-  │  bold moves  │       │  refinement  │       │ combine ideas│
-  └──────┬───────┘       └──────┬───────┘       └──────┬───────┘
-        │                       │                         │
-        └───────────┬───────────┴─────────┬───────────────┘
-                    v                     v
-              ┌──────────┐         ┌──────────┐
-              │  Board   │<------->│  Target  │
-              │  (JSON)  │         │   File   │
-              └──────────┘         └────┬─────┘
-                                        v
-                                  ┌──────────┐
-                                  │   Eval   │--> score
-                                  └──────────┘
-```
+<div align="center">
+<img src="docs/images/architecture.jpg" alt="Architecture" width="700">
+</div>
 
 ## 🔄 How it works
+
+<div align="center">
+<img src="docs/images/how-it-works.jpg" alt="How it works" width="700">
+</div>
 
 1. **Baseline** — eval the target file, record the starting score
 2. **Agents take turns** — each proposes a change (full rewrite or SEARCH/REPLACE diff)
@@ -103,6 +80,12 @@ max_backtracks: 5
 ---
 
 Description of what to optimize and any constraints.
+```
+
+Multi-file target:
+
+```yaml
+target: [target/solver.py, target/moves.py, target/config.py]
 ```
 
 ### Options
@@ -150,6 +133,25 @@ DONE
   Backtracks: 2
 ```
 
+### tsp-opt example (multi-file)
+
+40-city TSP across 3 files — solver, moves, config (Kimi K2.5, 8 rounds, backtrack=3):
+
+```
+Baseline:   592.71 (nearest-neighbor + random swaps)
+
+ROUND 1  │ Explorer  KEPT  score=497.66  (-16.0%)  ← 2-opt + SA
+ROUND 2-4│ all reverted... plateau
+         │ BACKTRACK #1: 497.66 → 592.71 (new branch)
+ROUND 5  │ 3 agents cascade improvements → 500.45
+ROUND 6  │ Optimizer KEPT  score=493.41  (-16.8%)  ← tuned parameters
+
+DONE
+  Final:      493.41 (-16.8%)
+  Tree nodes: 6
+  Backtracks: 1
+```
+
 ## 🧬 Key features
 
 | Feature | Description |
@@ -164,6 +166,14 @@ DONE
 | **Multi-file targets** | Optimize across multiple files simultaneously. `target: [a.py, b.py]` |
 | **Diff mode** | For large files: SEARCH/REPLACE blocks instead of full rewrites. |
 | **Any LLM** | Anthropic, OpenAI, or any OpenAI-compatible API. |
+
+### Multi-file optimization
+
+<div align="center">
+<img src="docs/images/multi-file.jpg" alt="Multi-file optimization" width="700">
+</div>
+
+Agents see all target files, modify any or all of them, and eval runs against the full set. Algorithm + config + helpers can be optimized together.
 
 ## 🔧 Custom agents
 
@@ -202,9 +212,10 @@ python3 -m pytest tests/test_multifile.py  # multi-file target tests (33)
 
 ```
 swarm-research/
-├── engine.py              # Core engine (~1200 lines)
+├── engine.py              # Core engine (~1300 lines)
 ├── run.py                 # CLI entry point
 ├── .env.example           # LLM config template
+├── docs/images/           # README images
 ├── tests/
 │   ├── test_tree.py       # SearchTree unit tests
 │   ├── test_backtrack_engine.py
@@ -212,6 +223,7 @@ swarm-research/
 │   └── conftest.py
 └── examples/
     ├── speed-opt/         # Python function speed optimization
+    ├── tsp-opt/           # 40-city TSP (3 files: solver + moves + config)
     ├── multi-opt/         # Multi-file sorting (algorithm + config)
     ├── algo-opt/          # Bin packing algorithm optimization
     ├── config-opt/        # Cache configuration tuning
