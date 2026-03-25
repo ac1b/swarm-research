@@ -51,4 +51,4 @@ The dataset is non-linearly separable — a linear model cannot exceed ~50%.
 - Batch normalization
 - Data augmentation / shuffling strategy
 
-Baseline (single perceptron): ~30%. Good 2-layer net: 90%+.
+Baseline (2-layer net, 8 hidden, ReLU, vanilla SGD): ~65%. Well-tuned: 90%+.
