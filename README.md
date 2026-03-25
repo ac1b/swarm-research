@@ -211,7 +211,9 @@ swarm-research/
     ├── speed-opt/         # Python function speed optimization
     ├── algo-opt/          # Bin packing algorithm optimization
     ├── config-opt/        # Cache configuration tuning
-    └── compress-opt/      # Compression algorithm from scratch
+    ├── compress-opt/      # Compression algorithm from scratch
+    ├── bio-opt/           # DNA motif discovery (bioinformatics)
+    └── num-opt/           # Numerical integration accuracy
 ```
 
 ## 🔮 Roadmap
