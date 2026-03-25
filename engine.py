@@ -943,8 +943,8 @@ class SwarmEngine:
         # Apply changes — diff mode or full-file mode
         if self.use_diff:
             new_contents = apply_diffs(target_contents, reply)
-            if new_contents is None:
-                # Fallback to full-file extraction
+            if new_contents is None and "<<<< SEARCH" not in reply:
+                # Fallback to full-file only if response isn't a diff
                 new_contents = extract_file_contents(target_contents, reply)
         else:
             new_contents = extract_file_contents(target_contents, reply)
@@ -1066,12 +1066,12 @@ class SwarmEngine:
             score = self._eval(tmp_path)
 
         if score is None:
-            print(f"    CRASH  | {change_summary[:80]}")
+            print(f"    [{agent.name}] CRASH  | {change_summary[:80]}")
             return self._crash_finding(agent, round_num, exp_num, reasoning, change_summary, current_best)
 
         delta = self._delta(score, current_best)
         kept = self.is_better(score, current_best)
-        print(f"    {'KEPT' if kept else 'reverted':8s} score={score:.4f}  delta={delta:+.4f}")
+        print(f"    [{agent.name}] {'KEPT' if kept else 'reverted':8s} score={score:.4f}  delta={delta:+.4f}")
         print(f"    change: {change_summary[:100]}")
 
         return Finding(
