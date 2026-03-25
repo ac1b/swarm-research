@@ -209,8 +209,9 @@ swarm-research/
 │   └── conftest.py
 └── examples/
     ├── speed-opt/         # Python function speed optimization
-    ├── copy-optimize/     # Trading strategy optimization
-    └── fade-optimize/     # Signal-based strategy optimization
+    ├── algo-opt/          # Bin packing algorithm optimization
+    ├── config-opt/        # Cache configuration tuning
+    └── compress-opt/      # Compression algorithm from scratch
 ```
 
 ## 🔮 Roadmap
