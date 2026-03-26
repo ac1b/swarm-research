@@ -590,13 +590,13 @@ Experiment #{experiment_num}. Propose your next change."""
 
 def build_prompt(agent, task_desc, target_contents, board, memory_text,
                  experiment_num, use_diff=False, phase_hint="",
-                 backtrack_context=""):
-    # type: (AgentConfig, str, Dict[str, str], Board, str, int, bool, str, str) -> List[dict]
+                 backtrack_context="", disable_board=False):
+    # type: (AgentConfig, str, Dict[str, str], Board, str, int, bool, str, str, bool) -> List[dict]
 
     keys = list(target_contents.keys())
     is_multi = len(keys) > 1
 
-    failed_list = board.failed_approaches()
+    failed_list = [] if disable_board else board.failed_approaches()
     failed_block = ""
     if failed_list:
         failed_block = "\nDO NOT try these (already failed):\n" + \
@@ -624,7 +624,8 @@ def build_prompt(agent, task_desc, target_contents, board, memory_text,
             files_block += f"\n### {key}\n```\n{target_contents[key]}```\n"
         user = USER_TEMPLATE_MULTI.format(
             task_desc=task_desc, target_files_block=files_block,
-            board_summary=board.summary(), memory_text=memory_text,
+            board_summary="" if disable_board else board.summary(),
+            memory_text=memory_text,
             phase_hint=phase_hint, backtrack_context=backtrack_context,
             experiment_num=experiment_num,
         )
@@ -632,7 +633,8 @@ def build_prompt(agent, task_desc, target_contents, board, memory_text,
         key = keys[0]
         user = USER_TEMPLATE.format(
             task_desc=task_desc, target_name=key,
-            target_content=target_contents[key], board_summary=board.summary(),
+            target_content=target_contents[key],
+            board_summary="" if disable_board else board.summary(),
             memory_text=memory_text, phase_hint=phase_hint,
             backtrack_context=backtrack_context, experiment_num=experiment_num,
         )
@@ -928,6 +930,7 @@ class SwarmEngine:
             exp_num, self.use_diff,
             phase_hint=self._phase_hint(round_num),
             backtrack_context=self._backtrack_context(),
+            disable_board=getattr(self, "disable_board", False),
         )
 
         # Call LLM

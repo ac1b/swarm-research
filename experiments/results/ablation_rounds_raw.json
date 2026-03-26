@@ -1,0 +1,134 @@
+[
+  {
+    "rounds": 2,
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 71.25,
+    "delta_pct": 178.1030444964871,
+    "backtracks": 0,
+    "elapsed": 705.0067322254181,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 2,
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 58.75,
+    "delta_pct": 129.31303669008585,
+    "backtracks": 0,
+    "elapsed": 287.4205467700958,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 2,
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 73.12,
+    "delta_pct": 185.40202966432474,
+    "backtracks": 0,
+    "elapsed": 308.41076278686523,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 4,
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 86.25,
+    "delta_pct": 236.65105386416857,
+    "backtracks": 0,
+    "elapsed": 753.1463901996613,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 4,
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 100.0,
+    "delta_pct": 290.32006245121,
+    "backtracks": 0,
+    "elapsed": 846.8961992263794,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 4,
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 70.0,
+    "delta_pct": 173.22404371584696,
+    "backtracks": 0,
+    "elapsed": 587.2216811180115,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 8,
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 87.5,
+    "delta_pct": 241.5300546448087,
+    "backtracks": 1,
+    "elapsed": 1554.8565108776093,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 8,
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 100.0,
+    "delta_pct": 290.32006245121,
+    "backtracks": 2,
+    "elapsed": 1481.8444430828094,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 8,
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 86.25,
+    "delta_pct": 236.65105386416857,
+    "backtracks": 1,
+    "elapsed": 1298.42569065094,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 12,
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 100.0,
+    "delta_pct": 290.32006245121,
+    "backtracks": 2,
+    "elapsed": 3329.8598322868347,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 12,
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 93.75,
+    "delta_pct": 265.92505854800936,
+    "backtracks": 0,
+    "elapsed": 3367.1248359680176,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "rounds": 12,
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 100.0,
+    "delta_pct": 290.32006245121,
+    "backtracks": 2,
+    "elapsed": 2481.3400268554688,
+    "status": "ok",
+    "error": ""
+  }
+]

@@ -1,0 +1,110 @@
+[
+  {
+    "example": "tsp-opt",
+    "config": "no_board",
+    "run": 1,
+    "baseline": 592.71,
+    "final_score": 493.37,
+    "delta_pct": 16.76030436469775,
+    "backtracks": 1,
+    "elapsed": 569.4086408615112,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "tsp-opt",
+    "config": "no_board",
+    "run": 2,
+    "baseline": 592.71,
+    "final_score": 493.37,
+    "delta_pct": 16.76030436469775,
+    "backtracks": 0,
+    "elapsed": 742.6866497993469,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "tsp-opt",
+    "config": "no_board",
+    "run": 3,
+    "baseline": 592.71,
+    "final_score": 497.66,
+    "delta_pct": 16.036510266403468,
+    "backtracks": 1,
+    "elapsed": 718.5327529907227,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "no_board",
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 86.25,
+    "delta_pct": 236.65105386416857,
+    "backtracks": 0,
+    "elapsed": 1422.700539112091,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "no_board",
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 100.0,
+    "delta_pct": 290.32006245121,
+    "backtracks": 0,
+    "elapsed": 1558.5835337638855,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "no_board",
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 84.38,
+    "delta_pct": 229.35206869633095,
+    "backtracks": 0,
+    "elapsed": 1574.1644253730774,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "bio-opt",
+    "config": "no_board",
+    "run": 1,
+    "baseline": 39.58,
+    "final_score": 64.31,
+    "delta_pct": 62.481051035876725,
+    "backtracks": 1,
+    "elapsed": 770.6203932762146,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "bio-opt",
+    "config": "no_board",
+    "run": 2,
+    "baseline": 39.58,
+    "final_score": 61.94,
+    "delta_pct": 56.49317837291562,
+    "backtracks": 1,
+    "elapsed": 867.957302570343,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "bio-opt",
+    "config": "no_board",
+    "run": 3,
+    "baseline": 39.58,
+    "final_score": 41.81,
+    "delta_pct": 5.634158665992936,
+    "backtracks": 1,
+    "elapsed": 789.1908750534058,
+    "status": "ok",
+    "error": ""
+  }
+]
