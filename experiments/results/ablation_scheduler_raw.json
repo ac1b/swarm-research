@@ -1,0 +1,110 @@
+[
+  {
+    "example": "scheduler",
+    "config": "full",
+    "run": 1,
+    "baseline": 213836.7,
+    "final_score": 133251.1,
+    "delta_pct": 37.68557969703049,
+    "backtracks": 1,
+    "elapsed": 500.4093680381775,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "full",
+    "run": 2,
+    "baseline": 213836.7,
+    "final_score": 67830.3,
+    "delta_pct": 68.27939263933648,
+    "backtracks": 0,
+    "elapsed": 839.8971736431122,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "full",
+    "run": 3,
+    "baseline": 213836.7,
+    "final_score": 92167.9,
+    "delta_pct": 56.89799739707918,
+    "backtracks": 0,
+    "elapsed": 596.042573928833,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "no_backtrack",
+    "run": 1,
+    "baseline": 213836.7,
+    "final_score": 46209.9,
+    "delta_pct": 78.39009861263293,
+    "backtracks": 0,
+    "elapsed": 741.9812433719635,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "no_backtrack",
+    "run": 2,
+    "baseline": 213836.7,
+    "final_score": 88375.3,
+    "delta_pct": 58.671593790962916,
+    "backtracks": 0,
+    "elapsed": 814.3824834823608,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "no_backtrack",
+    "run": 3,
+    "baseline": 213836.7,
+    "final_score": 78696.1,
+    "delta_pct": 63.19803850321296,
+    "backtracks": 0,
+    "elapsed": 787.277081489563,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "single_agent",
+    "run": 1,
+    "baseline": 213836.7,
+    "final_score": 71780.6,
+    "delta_pct": 66.4320483808439,
+    "backtracks": 1,
+    "elapsed": 363.90002942085266,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "single_agent",
+    "run": 2,
+    "baseline": 213836.7,
+    "final_score": 93289.0,
+    "delta_pct": 56.37371882375663,
+    "backtracks": 0,
+    "elapsed": 212.02996134757996,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "scheduler",
+    "config": "single_agent",
+    "run": 3,
+    "baseline": 213836.7,
+    "final_score": 87119.4,
+    "delta_pct": 59.25891112236581,
+    "backtracks": 1,
+    "elapsed": 360.964115858078,
+    "status": "ok",
+    "error": ""
+  }
+]

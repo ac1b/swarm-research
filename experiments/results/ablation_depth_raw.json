@@ -1,0 +1,110 @@
+[
+  {
+    "example": "game-ai",
+    "config": "bt_1",
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 87.5,
+    "delta_pct": 241.5300546448087,
+    "backtracks": 2,
+    "elapsed": 1222.5731768608093,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_1",
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 68.75,
+    "delta_pct": 168.34504293520683,
+    "backtracks": 3,
+    "elapsed": 843.168615102768,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_1",
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 80.62,
+    "delta_pct": 214.67603434816547,
+    "backtracks": 3,
+    "elapsed": 870.1815059185028,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_2",
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 87.5,
+    "delta_pct": 241.5300546448087,
+    "backtracks": 0,
+    "elapsed": 1630.3930265903473,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_2",
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 100.0,
+    "delta_pct": 290.32006245121,
+    "backtracks": 1,
+    "elapsed": 1218.7632575035095,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_2",
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 86.25,
+    "delta_pct": 236.65105386416857,
+    "backtracks": 0,
+    "elapsed": 1169.3886115550995,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_5",
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 76.25,
+    "delta_pct": 197.6190476190476,
+    "backtracks": 0,
+    "elapsed": 787.399787902832,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_5",
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 87.5,
+    "delta_pct": 241.5300546448087,
+    "backtracks": 0,
+    "elapsed": 1199.3052625656128,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "bt_5",
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 73.75,
+    "delta_pct": 187.86104605776734,
+    "backtracks": 0,
+    "elapsed": 1323.6838252544403,
+    "status": "ok",
+    "error": ""
+  }
+]

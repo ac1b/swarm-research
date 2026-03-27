@@ -1,0 +1,737 @@
+Parallel vs sequential: game-ai | 3 runs each = 6 total
+  Rounds: 6 | Agents: Explorer, Optimizer, Synthesizer
+
+[1/6] game-ai | sequential | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_sequential_q3nu2pu6/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_sequential_q3nu2pu6/game-ai/target/strategy.py, /tmp/ablation_game-ai_sequential_q3nu2pu6/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | Looking at this fresh, I need to establish a solid baseline
+
+  [Optimizer] experiment #2
+    CRASH  | I'll implement a basic minimax search with alpha-beta pruning and a simple posit
+
+  [Synthesizer] experiment #3
+    KEPT     score=45.0000  delta=+19.3800
+    change: Looking at the board, I see two failed experiments: both tried to implement full minimax/alpha-beta 
+============================================================
+ROUND 2/6  |  best = 45.0000
+============================================================
+
+  [Explorer] experiment #4
+    KEPT     score=58.7500  delta=+13.7500
+    change: I see the pattern: two agents tried full minimax implementations and both failed with score=0, likel
+
+  [Optimizer] experiment #5
+    KEPT     score=70.6200  delta=+11.8700
+    change: Looking at the board, I see that full minimax implementations are failing (score=0, likely timeouts)
+
+  [Synthesizer] experiment #6
+    reverted score=66.2500  delta=-4.3700
+    change: Looking at the board, I see a clear pattern: full minimax implementations fail (likely timeouts), wh
+============================================================
+ROUND 3/6  |  best = 70.6200
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=50.0000  delta=-20.6200
+    change: Looking at the board, I see that full minimax implementations consistently fail (score=0, timeouts),
+
+  [Optimizer] experiment #8
+    reverted score=58.7500  delta=-11.8700
+    change: Looking at the board, I see that full minimax implementations consistently fail (timeouts), while 1-
+
+  [Synthesizer] experiment #9
+    KEPT     score=71.2500  delta=+0.6300
+    change: Looking at the board, I see that my R2 experiment failed because I was too conservative - I just twe
+============================================================
+ROUND 4/6  |  best = 71.2500
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=46.2500  delta=-25.0000
+    change: Looking at the board, I see that full minimax consistently fails (timeouts), but the current 1-ply s
+
+  [Optimizer] experiment #11
+    KEPT     score=77.5000  delta=+6.2500
+    change: Looking at the board, I see that full minimax implementations consistently fail (timeouts), while th
+
+  [Synthesizer] experiment #12
+    KEPT     score=85.6200  delta=+8.1200
+    change: Looking at the board, I see the current best score is 77.50% with a 1-ply approach
+============================================================
+ROUND 5/6  |  best = 85.6200
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=75.0000  delta=-10.6200
+    change: Looking at the board, I see the current best score is 85.62% achieved by a 1-ply approach with smart
+
+  [Optimizer] experiment #14
+    reverted score=73.1200  delta=-12.5000
+    change: Looking at the board, I see the current best score is 85.62% achieved by a 1-ply approach with smart
+
+  [Synthesizer] experiment #15
+    reverted score=85.0000  delta=-0.6200
+    change: Looking at the board, I see the current best score is 85.62% with a 1-ply approach
+============================================================
+ROUND 6/6  |  best = 85.6200
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=75.0000  delta=-10.6200
+    change: Looking at the board, I see the current best is 85.62% with a 1-ply approach
+
+  [Optimizer] experiment #17
+    KEPT     score=86.2500  delta=+0.6300
+    change: Looking at the board, I see the current best score is 85.62% with a 1-ply approach
+
+  [Synthesizer] experiment #18
+    reverted score=72.5000  delta=-13.7500
+    change: Looking at the board, I see the current best score is 86.25% with a 1-ply approach
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  86.2500
+  Improvement: +60.6300 (+236.7%)
+  Kept:        7/18
+  Board:       /tmp/ablation_game-ai_sequential_q3nu2pu6/game-ai/board.json
+  Tree nodes:  8
+  Backtracks:  0
+  Max depth:   8
+============================================================
+-> score=86.25 (1349.0s)
+[2/6] game-ai | sequential | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_sequential_dvc4dl21/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_sequential_dvc4dl21/game-ai/target/strategy.py, /tmp/ablation_game-ai_sequential_dvc4dl21/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | Looking at this fresh Othello AI problem, I need to establish a strong baseline
+
+  [Optimizer] experiment #2
+    CRASH  | I'll implement a basic minimax search with alpha-beta pruning and a simple evalu
+
+  [Synthesizer] experiment #3
+    KEPT     score=56.2500  delta=+30.6300
+    change: Looking at the reverted experiments, both tried to implement complex minimax search from scratch and
+============================================================
+ROUND 2/6  |  best = 56.2500
+============================================================
+
+  [Explorer] experiment #4
+    KEPT     score=62.5000  delta=+6.2500
+    change: Looking at the board, I see that complex minimax implementations from scratch are failing with 0 sco
+
+  [Optimizer] experiment #5
+    reverted score=60.0000  delta=-2.5000
+    change: Looking at the successful experiments, I see that Synthesizer and Explorer both made incremental imp
+
+  [Synthesizer] experiment #6
+    reverted score=61.2500  delta=-1.2500
+    change: Looking at the board, I see that complex minimax implementations are failing with 0 score (bugs/time
+============================================================
+ROUND 3/6  |  best = 62.5000
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=49.3800  delta=-13.1200
+    change: Looking at the board, I see that complex minimax implementations are failing with 0 score (bugs/time
+
+  [Optimizer] experiment #8
+    reverted score=48.1200  delta=-14.3800
+    change: Looking at the board, I see that complex minimax implementations are failing with 0 score, while sim
+
+  [Synthesizer] experiment #9
+    reverted score=60.6200  delta=-1.8800
+    change: Looking at the board, I see that complex minimax implementations are failing with 0 score (bugs/time
+============================================================
+ROUND 4/6  |  best = 62.5000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=0.0000  delta=-62.5000
+    change: Looking at the board, I see that complex minimax implementations keep failing with 0 score, while si
+
+  [Optimizer] experiment #11
+    KEPT     score=73.7500  delta=+11.2500
+    change: Looking at the board, I see that complex minimax implementations keep failing with 0 score, while si
+
+  [Synthesizer] experiment #12
+    reverted score=60.0000  delta=-13.7500
+    change: Looking at the board, I see that complex minimax implementations keep failing with 0 score, while si
+============================================================
+ROUND 5/6  |  best = 73.7500
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=72.5000  delta=-1.2500
+    change: Looking at the board, I see that complex minimax implementations keep failing with 0 score, while si
+
+  [Optimizer] experiment #14
+    KEPT     score=74.3800  delta=+0.6300
+    change: Looking at the board, I see that my R4 experiment was kept with a score of 73.75, which is the curre
+
+  [Synthesizer] experiment #15
+    KEPT     score=85.0000  delta=+10.6200
+    change: Looking at the board, I can see that the current best approach is a 1-ply lookahead with careful eva
+============================================================
+ROUND 6/6  |  best = 85.0000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=70.6200  delta=-14.3800
+    change: Looking at the board, I see the current best score is 85.0 from Synthesizer R5, which uses a 1-ply l
+
+  [Optimizer] experiment #17
+    reverted score=61.2500  delta=-23.7500
+    change: Looking at the board, I see Synthesizer R5 achieved 85.0 with a 1-ply lookahead with careful evaluat
+
+  [Synthesizer] experiment #18
+    reverted score=85.0000  delta=+0.0000
+    change: Looking at the board, I can see that my R5 experiment achieved 85.0 with a 1-ply lookahead and caref
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  85.0000
+  Improvement: +59.3800 (+231.8%)
+  Kept:        5/18
+  Board:       /tmp/ablation_game-ai_sequential_dvc4dl21/game-ai/board.json
+  Tree nodes:  6
+  Backtracks:  0
+  Max depth:   6
+============================================================
+-> score=85.00 (945.2s)
+[3/6] game-ai | sequential | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_sequential_78adpl6f/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_sequential_78adpl6f/game-ai/target/strategy.py, /tmp/ablation_game-ai_sequential_78adpl6f/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll start with a solid, proven approach: a minimax search with alpha-beta pruni
+
+  [Optimizer] experiment #2
+    KEPT     score=45.0000  delta=+19.3800
+    change: I'll start with a simple but effective approach: a basic positional evaluation that prioritizes corn
+
+  [Synthesizer] experiment #3
+    KEPT     score=72.5000  delta=+27.5000
+    change: Looking at the board, I see that the simple positional evaluation approach worked (score=45), while 
+============================================================
+ROUND 2/6  |  best = 72.5000
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=70.0000  delta=-2.5000
+    change: Looking at the board, I see that simple positional evaluation (score=45) and an improved version (sc
+
+  [Optimizer] experiment #5
+    reverted score=57.5000  delta=-15.0000
+    change: Looking at the board, I can see that the current best approach is a simple positional + mobility eva
+
+  [Synthesizer] experiment #6
+    reverted score=71.2500  delta=-1.2500
+    change: Looking at the board, I see that the current best approach (score=72.5) uses simple 1-ply positional
+============================================================
+ROUND 3/6  |  best = 72.5000
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=58.7500  delta=-13.7500
+    change: Looking at the board, I see that minimax approaches have consistently failed (scores 0, 70, 57.5, 71
+
+  [Optimizer] experiment #8
+    KEPT     score=73.7500  delta=+1.2500
+    change: Looking at the board, I see that the current best approach (score=72.5) is a simple 1-ply positional
+
+  [Synthesizer] experiment #9
+    reverted score=73.7500  delta=+0.0000
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+============================================================
+ROUND 4/6  |  best = 73.7500
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=60.0000  delta=-13.7500
+    change: Looking at the board, I see that minimax approaches have consistently failed (scores 0, 70, 57.5, 71
+
+  [Optimizer] experiment #11
+    reverted score=48.7500  delta=-25.0000
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+
+  [Synthesizer] experiment #12
+    reverted score=52.5000  delta=-21.2500
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+============================================================
+ROUND 5/6  |  best = 73.7500
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=61.2500  delta=-12.5000
+    change: Looking at the board, I see that minimax approaches have consistently failed while simple 1-ply eval
+
+  [Optimizer] experiment #14
+    reverted score=58.7500  delta=-15.0000
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+
+  [Synthesizer] experiment #15
+    reverted score=67.5000  delta=-6.2500
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+============================================================
+ROUND 6/6  |  best = 73.7500
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=60.0000  delta=-13.7500
+    change: Looking at the board, I see that minimax approaches have consistently failed while simple 1-ply eval
+
+  [Optimizer] experiment #17
+    reverted score=48.7500  delta=-25.0000
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+
+  [Synthesizer] experiment #18
+    reverted score=60.0000  delta=-13.7500
+    change: Looking at the board, I see that the current best approach (score=73.75) uses simple 1-ply positiona
+
+  BACKTRACK #1: score 73.7500 -> 72.5000
+    from: node 3 (Optimizer)
+    to:   node 2 (Synthesizer)
+
+  Restored global best: 73.7500
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  73.7500
+  Improvement: +48.1300 (+187.9%)
+  Kept:        3/18
+  Board:       /tmp/ablation_game-ai_sequential_78adpl6f/game-ai/board.json
+  Tree nodes:  4
+  Backtracks:  1
+  Max depth:   4
+============================================================
+-> score=73.75 (1071.7s)
+[4/6] game-ai | parallel | run 1 ... SwarmResearch Engine v0.6 [full-file, parallel]
+  Task:      /tmp/ablation_game-ai_parallel_s4474310/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_parallel_s4474310/game-ai/target/strategy.py, /tmp/ablation_game-ai_parallel_s4474310/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+
+  [Optimizer] experiment #2
+
+  [Synthesizer] experiment #3
+    [Optimizer] CRASH  | I'll start with a safe, incremental improvement by implementing a basic position
+    [Explorer] CRASH  | I'll implement a complete Othello AI with alpha-beta search, positional evaluati
+    [Synthesizer] CRASH  | Looking at this fresh board, I need to establish a baseline that can at least be
+============================================================
+ROUND 2/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #4
+
+  [Optimizer] experiment #5
+
+  [Synthesizer] experiment #6
+    [Explorer] KEPT     score=58.1300  delta=+32.5100
+    change: Looking at the failed experiments, they all tried to implement complex complete solutions at once
+    [Optimizer] KEPT     score=67.5000  delta=+41.8800
+    change: Looking at the failed attempts, all three tried to implement complex evaluation functions and search
+    [Synthesizer] KEPT     score=43.7500  delta=+18.1300
+    change: Looking at the board, I see 3 experiments all failed with 0.0000 score
+
+  >> Round winner: Optimizer (delta=+41.8800)
+============================================================
+ROUND 3/6  |  best = 67.5000
+============================================================
+
+  [Explorer] experiment #7
+
+  [Optimizer] experiment #8
+
+  [Synthesizer] experiment #9
+    [Optimizer] reverted score=67.5000  delta=+0.0000
+    change: Looking at the successful R2 experiment, it kept the simple positional priority approach but likely 
+    [Synthesizer] reverted score=50.0000  delta=-17.5000
+    change: Looking at the board, I see that Optimizer R2 succeeded with 67.5 points by using a simple, fast app
+    [Explorer] KEPT     score=86.2500  delta=+18.7500
+    change: Looking at the board, the only successful experiment (R2 Optimizer, score=67.5) used a simple approa
+
+  >> Round winner: Explorer (delta=+18.7500)
+============================================================
+ROUND 4/6  |  best = 86.2500
+============================================================
+
+  [Explorer] experiment #10
+
+  [Optimizer] experiment #11
+
+  [Synthesizer] experiment #12
+    [Optimizer] KEPT     score=87.5000  delta=+1.2500
+    change: Looking at the board, I see that R3 Explorer achieved 86.25 with a simple approach, while my R3 atte
+    [Synthesizer] reverted score=49.3800  delta=-36.8700
+    change: Looking at the board, I see that R3 Explorer achieved 86.25 points with a simple approach, while my 
+    [Explorer] CRASH  | Looking at the board, I see that R3 Explorer's simple approach scored 86.25, whi
+
+  >> Round winner: Optimizer (delta=+1.2500)
+============================================================
+ROUND 5/6  |  best = 87.5000
+============================================================
+
+  [Explorer] experiment #13
+
+  [Optimizer] experiment #14
+
+  [Synthesizer] experiment #15
+    [Synthesizer] reverted score=55.0000  delta=-32.5000
+    change: Looking at the board, I see that R4 Optimizer achieved the best score of 87.5 with a simple approach
+    [Explorer] reverted score=87.5000  delta=+0.0000
+    change: Looking at the board, I see that R4 Optimizer achieved 87.5 points with a simple refinement approach
+    [Optimizer] reverted score=87.5000  delta=+0.0000
+    change: Looking at the board, I see that R4 Optimizer achieved 87.5 (kept), which is a small improvement ove
+============================================================
+ROUND 6/6  |  best = 87.5000
+============================================================
+
+  [Explorer] experiment #16
+
+  [Optimizer] experiment #17
+
+  [Synthesizer] experiment #18
+    [Optimizer] reverted score=87.5000  delta=+0.0000
+    change: Looking at the board, I see that R4 Optimizer achieved 87.5 (kept), and R5 Explorer also achieved 87
+    [Synthesizer] reverted score=55.0000  delta=-32.5000
+    change: Looking at the board, I see that R4 Optimizer achieved 87.5 with a simple refinement approach, and R
+    [Explorer] reverted score=86.2500  delta=-1.2500
+    change: Looking at the board, I see that R4 Optimizer achieved 87.5 (kept), which is a small improvement ove
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  87.5000
+  Improvement: +61.8800 (+241.5%)
+  Kept:        3/18
+  Board:       /tmp/ablation_game-ai_parallel_s4474310/game-ai/board.json
+  Tree nodes:  4
+  Backtracks:  0
+  Max depth:   4
+============================================================
+-> score=87.50 (426.5s)
+[5/6] game-ai | parallel | run 2 ... SwarmResearch Engine v0.6 [full-file, parallel]
+  Task:      /tmp/ablation_game-ai_parallel_sqbrn5g3/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_parallel_sqbrn5g3/game-ai/target/strategy.py, /tmp/ablation_game-ai_parallel_sqbrn5g3/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+
+  [Optimizer] experiment #2
+
+  [Synthesizer] experiment #3
+    [Synthesizer] CRASH  | Looking at the empty board, I need to start with something safe and informative
+    [Explorer] CRASH  | I'll start with a solid foundation that combines proven Othello AI techniques: a
+    [Optimizer] CRASH  | I'll start with a safe, incremental improvement that establishes a solid foundat
+============================================================
+ROUND 2/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #4
+
+  [Optimizer] experiment #5
+
+  [Synthesizer] experiment #6
+    [Optimizer] KEPT     score=58.7500  delta=+33.1300
+    change: Looking at the 3 failed attempts, they all tried to implement complex alpha-beta search with iterati
+    [Explorer] KEPT     score=71.2500  delta=+45.6300
+    change: The previous attempts all failed with score 0.0000, suggesting they likely had bugs or timeouts
+    [Synthesizer] KEPT     score=46.8800  delta=+21.2600
+    change: Looking at the board, I see 3 failed attempts that all tried complex multi-file changes with alpha-b
+
+  >> Round winner: Explorer (delta=+45.6300)
+============================================================
+ROUND 3/6  |  best = 71.2500
+============================================================
+
+  [Explorer] experiment #7
+
+  [Optimizer] experiment #8
+
+  [Synthesizer] experiment #9
+    [Optimizer] KEPT     score=75.0000  delta=+3.7500
+    change: Looking at the board, I see that R2 Explorer achieved 71.25 with a simple positional approach, while
+    [Explorer] reverted score=13.7500  delta=-57.5000
+    change: Looking at the board, the successful R2 Explorer change was a radical simplification that worked
+    [Synthesizer] CRASH  | Looking at the board, I see that Explorer R2 achieved 71.25 with a simple approa
+
+  >> Round winner: Optimizer (delta=+3.7500)
+============================================================
+ROUND 4/6  |  best = 75.0000
+============================================================
+
+  [Explorer] experiment #10
+
+  [Optimizer] experiment #11
+
+  [Synthesizer] experiment #12
+    [Optimizer] reverted score=50.0000  delta=-25.0000
+    change: Looking at the board, I see that my R3 change was kept at 75.00, which built on the successful simpl
+    [Synthesizer] reverted score=63.1200  delta=-11.8800
+    change: Looking at the board, I see that the successful approaches (R2 Explorer at 71.25, R3 Optimizer at 75
+    [Explorer] reverted score=61.2500  delta=-13.7500
+    change: Looking at the board, I see that R2 Explorer achieved 71.25 with a simple positional approach, and R
+============================================================
+ROUND 5/6  |  best = 75.0000
+============================================================
+
+  [Explorer] experiment #13
+
+  [Optimizer] experiment #14
+
+  [Synthesizer] experiment #15
+    [Optimizer] reverted score=72.5000  delta=-2.5000
+    change: Looking at the board, I see that my R3 change was kept at 75.00, but my R4 was reverted at 50.00
+    [Synthesizer] reverted score=58.1300  delta=-16.8700
+    change: Looking at the board, I see that the successful approaches (R2 Explorer at 71.25, R3 Optimizer at 75
+    [Explorer] reverted score=48.7500  delta=-26.2500
+    change: Looking at the board, I see that my R2 simple approach (71.25) was kept, but subsequent attempts to 
+============================================================
+ROUND 6/6  |  best = 75.0000
+============================================================
+
+  [Explorer] experiment #16
+
+  [Optimizer] experiment #17
+
+  [Synthesizer] experiment #18
+    [Synthesizer] reverted score=75.0000  delta=+0.0000
+    change: Looking at the board, I see that the successful approaches (R2 Explorer at 71.25, R3 Optimizer at 75
+    [Optimizer] reverted score=75.0000  delta=+0.0000
+    change: Looking at the board, I see that my R3 change was kept at 75.00, but my R4 and R5 attempts were reve
+    [Explorer] reverted score=75.0000  delta=+0.0000
+    change: Looking at the board, I see that my R2 simple approach (71.25) was kept, but subsequent attempts to 
+
+  BACKTRACK #1: score 75.0000 -> 71.2500
+    from: node 2 (Optimizer)
+    to:   node 1 (Explorer)
+
+  Restored global best: 75.0000
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  75.0000
+  Improvement: +49.3800 (+192.7%)
+  Kept:        2/18
+  Board:       /tmp/ablation_game-ai_parallel_sqbrn5g3/game-ai/board.json
+  Tree nodes:  3
+  Backtracks:  1
+  Max depth:   3
+============================================================
+-> score=75.00 (396.0s)
+[6/6] game-ai | parallel | run 3 ... SwarmResearch Engine v0.6 [full-file, parallel]
+  Task:      /tmp/ablation_game-ai_parallel_5bqabhba/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_parallel_5bqabhba/game-ai/target/strategy.py, /tmp/ablation_game-ai_parallel_5bqabhba/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+
+  [Optimizer] experiment #2
+
+  [Synthesizer] experiment #3
+    [Optimizer] CRASH  | I'll start with a safe, informative baseline that implements a basic alpha-beta 
+    [Explorer] CRASH  | I'll start with a solid, proven approach: a minimax search with alpha-beta pruni
+    [Synthesizer] CRASH  | I'll start with a safe, informative experiment that implements a basic but solid
+============================================================
+ROUND 2/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #4
+
+  [Optimizer] experiment #5
+
+  [Synthesizer] experiment #6
+    [Optimizer] KEPT     score=58.7500  delta=+33.1300
+    change: Looking at the board, I see that all three previous attempts at implementing alpha-beta search with 
+    [Explorer] KEPT     score=43.7500  delta=+18.1300
+    change: Looking at the board, I see 3 failed attempts with standard alpha-beta/minimax approaches
+    [Synthesizer] KEPT     score=46.2500  delta=+20.6300
+    change: Looking at the board, I see 3 failed attempts at basic alpha-beta + positional evaluation, all scori
+
+  >> Round winner: Optimizer (delta=+33.1300)
+============================================================
+ROUND 3/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #7
+
+  [Optimizer] experiment #8
+
+  [Synthesizer] experiment #9
+    [Optimizer] KEPT     score=81.8800  delta=+23.1300
+    change: I see that my previous change (simplifying to just positional weights) was successful, scoring 58.75
+    [Explorer] reverted score=48.7500  delta=-10.0000
+    change: I see that R2 Optimizer succeeded with score 58.75 by building on something that works, while my R2 
+    [Synthesizer] CRASH  | Looking at the board, I see that the R2 Optimizer achieved 58.75% with a success
+
+  >> Round winner: Optimizer (delta=+23.1300)
+============================================================
+ROUND 4/6  |  best = 81.8800
+============================================================
+
+  [Explorer] experiment #10
+
+  [Optimizer] experiment #11
+
+  [Synthesizer] experiment #12
+    [Optimizer] reverted score=81.8800  delta=+0.0000
+    change: Looking at the board, I see that my R3 change (simplifying to just positional weights) was successfu
+    [Synthesizer] reverted score=60.0000  delta=-21.8800
+    change: Looking at the board, I see that R2 Optimizer succeeded with 58.75% by building on something that wo
+    [Explorer] reverted score=61.2500  delta=-20.6300
+    change: Looking at the board, I see that the successful approaches (R2 Optimizer 58.75%, R3 Optimizer 81.88%
+============================================================
+ROUND 5/6  |  best = 81.8800
+============================================================
+
+  [Explorer] experiment #13
+
+  [Optimizer] experiment #14
+
+  [Synthesizer] experiment #15
+    [Synthesizer] reverted score=62.5000  delta=-19.3800
+    change: Looking at the board, I see that complex alpha-beta implementations keep failing (0% or low scores),
+    [Explorer] reverted score=81.8800  delta=+0.0000
+    change: Looking at the board, I see that R3 Optimizer achieved 81.88% with a simple positional + mobility ev
+    [Optimizer] reverted score=66.2500  delta=-15.6300
+    change: Looking at the board, I see that my R3 change (simplifying to just positional weights) was successfu
+============================================================
+ROUND 6/6  |  best = 81.8800
+============================================================
+
+  [Explorer] experiment #16
+
+  [Optimizer] experiment #17
+
+  [Synthesizer] experiment #18
+    [Optimizer] reverted score=48.1200  delta=-33.7600
+    change: Looking at the board, I see that my R3 approach (simple 1-ply search with positional weights + mobil
+    [Synthesizer] reverted score=81.8800  delta=+0.0000
+    change: Looking at the board, I see that the successful approaches (R2 Optimizer 58.75%, R3 Optimizer 81.88%
+    [Explorer] reverted score=72.5000  delta=-9.3800
+    change: Looking at the board, I see that R3 Optimizer achieved 81.88% with a simple positional + mobility ev
+
+  BACKTRACK #1: score 81.8800 -> 58.7500
+    from: node 2 (Optimizer)
+    to:   node 1 (Optimizer)
+
+  Restored global best: 81.8800
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  81.8800
+  Improvement: +56.2600 (+219.6%)
+  Kept:        2/18
+  Board:       /tmp/ablation_game-ai_parallel_5bqabhba/game-ai/board.json
+  Tree nodes:  3
+  Backtracks:  1
+  Max depth:   3
+============================================================
+-> score=81.88 (465.4s)
+
+Done. 6 runs in 4654s
+Raw results: /root/projects/swarm-research/experiments/results/ablation_parallel_raw.json
+Summary:     /root/projects/swarm-research/experiments/results/ablation_parallel_summary.md
+
+# Parallel vs Sequential — game-ai
+
+Rounds: 6 | Runs: 3 | Config: full (3 agents + backtrack=3)
+
+| Mode | Final (mean +/- std) | Delta % | Time (mean) |
+|------|----------------------|---------|-------------|
+| sequential | 81.67 +/- 6.88 | +218.8 +/- 26.9% | 1122s |
+| parallel | 81.46 +/- 6.26 | +218.0 +/- 24.4% | 429s |
+
+## Per-run details
+
+- sequential | run 1 -> score=86.25 (1349.0s)
+- sequential | run 2 -> score=85.00 (945.2s)
+- sequential | run 3 -> score=73.75 (1071.7s)
+- parallel | run 1 -> score=87.50 (426.5s)
+- parallel | run 2 -> score=75.00 (396.0s)
+- parallel | run 3 -> score=81.88 (465.4s)
+

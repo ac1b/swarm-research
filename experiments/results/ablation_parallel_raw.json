@@ -1,0 +1,74 @@
+[
+  {
+    "example": "game-ai",
+    "config": "sequential",
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 86.25,
+    "delta_pct": 236.65105386416857,
+    "backtracks": 0,
+    "elapsed": 1348.9651429653168,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "sequential",
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 85.0,
+    "delta_pct": 231.77205308352848,
+    "backtracks": 0,
+    "elapsed": 945.1859629154205,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "sequential",
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 73.75,
+    "delta_pct": 187.86104605776734,
+    "backtracks": 1,
+    "elapsed": 1071.7194464206696,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "parallel",
+    "run": 1,
+    "baseline": 25.62,
+    "final_score": 87.5,
+    "delta_pct": 241.5300546448087,
+    "backtracks": 0,
+    "elapsed": 426.4792265892029,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "parallel",
+    "run": 2,
+    "baseline": 25.62,
+    "final_score": 75.0,
+    "delta_pct": 192.74004683840747,
+    "backtracks": 1,
+    "elapsed": 396.042818069458,
+    "status": "ok",
+    "error": ""
+  },
+  {
+    "example": "game-ai",
+    "config": "parallel",
+    "run": 3,
+    "baseline": 25.62,
+    "final_score": 81.88,
+    "delta_pct": 219.5940671350507,
+    "backtracks": 1,
+    "elapsed": 465.37958121299744,
+    "status": "ok",
+    "error": ""
+  }
+]

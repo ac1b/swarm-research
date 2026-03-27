@@ -1,0 +1,955 @@
+Scheduler ablation: 3 configs x 3 runs = 9 total
+  Rounds: 6
+
+  full             | agents: Explorer, Optimizer, Synthesizer         | backtrack: 3
+  no_backtrack     | agents: Explorer, Optimizer, Synthesizer         | backtrack: 0
+  single_agent     | agents: Explorer                                 | backtrack: 3
+
+[1/9] scheduler | full | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_full_s5uyplwl/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_full_s5uyplwl/scheduler/target/scheduler.py, /tmp/ablation_scheduler_full_s5uyplwl/scheduler/target/heuristics.py, /tmp/ablation_scheduler_full_s5uyplwl/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    KEPT     score=192548.9000  delta=+21287.8000
+    change: Looking at this job shop scheduling problem, I need to make a meaningful first improvement
+
+  [Optimizer] experiment #2
+    KEPT     score=143676.2000  delta=+48872.7000
+    change: Looking at the current code, I see it uses a simple EDD (Earliest Due Date) dispatching rule
+
+  [Synthesizer] experiment #3
+    reverted score=145204.6000  delta=-1528.4000
+    change: Looking at the board, I see two successful experiments that improved the score significantly
+============================================================
+ROUND 2/6  |  best = 143676.2000
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=197876.9000  delta=-54200.7000
+    change: Looking at the board, I see that my first experiment (R1) was kept with a score of 192548.9, but the
+
+  [Optimizer] experiment #5
+    reverted score=257808.2000  delta=-114132.0000
+    change: Looking at the current state, I see that my previous change improved the priority_score function to 
+
+  [Synthesizer] experiment #6
+    KEPT     score=133251.1000  delta=+10425.1000
+    change: Looking at the board, I see that the best score (143676.2) came from Optimizer R1 which changed the 
+============================================================
+ROUND 3/6  |  best = 133251.1000
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=500000.0000  delta=-366748.9000
+    change: Looking at the board, I see that Optimizer R1 achieved the best score (143676.2) by implementing an 
+
+  [Optimizer] experiment #8
+    reverted score=183266.2000  delta=-50015.1000
+    change: Looking at the board, I see that my previous attempt to refine the priority_score function by adding
+
+  [Synthesizer] experiment #9
+    reverted score=164815.7000  delta=-31564.6000
+    change: Looking at the board, I see that my previous change (R2) was kept and improved the score to 133251.1
+============================================================
+ROUND 4/6  |  best = 133251.1000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=158432.1000  delta=-25181.0000
+    change: Looking at the board, I see that the best score (133251.1) came from Synthesizer R2, and my attempts
+
+  [Optimizer] experiment #11
+    reverted score=160209.9000  delta=-26958.8000
+    change: Looking at the board, I see that my R1 experiment was kept (score=143676.2) with an ATC-style dispat
+
+  [Synthesizer] experiment #12
+    reverted score=133251.1000  delta=+0.0000
+    change: Looking at the board, I see that my R2 experiment was kept with the best score of 133251.1, but my R
+============================================================
+ROUND 5/6  |  best = 133251.1000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=147067.8000  delta=-13816.7000
+    change: Looking at the board, I see that many attempts to refine the priority_score function have failed
+
+  [Optimizer] experiment #14
+    reverted score=188963.4000  delta=-55712.3000
+    change: Looking at the board, I see that my R1 ATC-style dispatching rule was successful, but my subsequent 
+
+  [Synthesizer] experiment #15
+    reverted score=500000.0000  delta=-366748.9000
+    change: Looking at the board, I see that many attempts to refine the priority_score function have failed, in
+
+  BACKTRACK #1: score 133251.1000 -> 143676.2000
+    from: node 3 (Synthesizer)
+    to:   node 2 (Optimizer)
+============================================================
+ROUND 6/6  |  best = 143676.2000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=158920.1000  delta=-15243.9000
+    change: Looking at the board, I see that the successful approaches (Optimizer R1 and Synthesizer R2) used AT
+
+  [Optimizer] experiment #17
+    reverted score=155870.8000  delta=-12194.6000
+    change: Looking at the board, I see that my R1 ATC-style dispatching rule was successful, but I've had 4 fai
+
+  [Synthesizer] experiment #18
+    reverted score=500000.0000  delta=-356323.8000
+    change: Looking at the board, I see that my R2 experiment (score=133251.1) was the best but has been abandon
+
+  Restored global best: 133251.1000
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    213836.7000
+  Final best:  133251.1000
+  Improvement: +80585.6000 (+37.7%)
+  Kept:        3/18
+  Board:       /tmp/ablation_scheduler_full_s5uyplwl/scheduler/board.json
+  Tree nodes:  4
+  Backtracks:  1
+  Max depth:   4
+============================================================
+-> score=133251.10 (500.4s)
+[2/9] scheduler | full | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_full_ujvhfqhx/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_full_ujvhfqhx/scheduler/target/scheduler.py, /tmp/ablation_scheduler_full_ujvhfqhx/scheduler/target/heuristics.py, /tmp/ablation_scheduler_full_ujvhfqhx/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    KEPT     score=177809.5000  delta=+36027.2000
+    change: I'll implement a priority-based dispatching system using the EDD (Earliest Due Date) rule, which is 
+
+  [Optimizer] experiment #2
+    reverted score=195658.4000  delta=-17848.9000
+    change: I'll refine the EDD dispatching rule to better account for the weighted tardiness objective
+
+  [Synthesizer] experiment #3
+    KEPT     score=174527.9000  delta=+3281.6000
+    change: Looking at the board, I can see that:
+1
+============================================================
+ROUND 2/6  |  best = 174527.9000
+============================================================
+
+  [Explorer] experiment #4
+    CRASH  | Looking at the board, I see that my initial EDD implementation was successful, b
+
+  [Optimizer] experiment #5
+    reverted score=174527.9000  delta=+0.0000
+    change: Looking at the board, I see that the baseline EDD implementation from Explorer R1 worked well (score
+
+  [Synthesizer] experiment #6
+    KEPT     score=151864.0000  delta=+22663.9000
+    change: Looking at the board, I can see that:
+1
+============================================================
+ROUND 3/6  |  best = 151864.0000
+============================================================
+
+  [Explorer] experiment #7
+    KEPT     score=126413.9000  delta=+25450.1000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #8
+    reverted score=129201.6000  delta=-2787.7000
+    change: Looking at the board, I see that the COVERT dispatching rule is currently being used (config.DISPATC
+
+  [Synthesizer] experiment #9
+    reverted score=126413.9000  delta=+0.0000
+    change: Looking at the board, I can see that:
+1
+============================================================
+ROUND 4/6  |  best = 126413.9000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=402739.6000  delta=-276325.7000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #11
+    reverted score=341645.4000  delta=-215231.5000
+    change: Looking at the board, I can see that the best score is 126413.9 from R3 Explorer using COVERT
+
+  [Synthesizer] experiment #12
+    KEPT     score=116550.3000  delta=+9863.6000
+    change: Looking at the board, I can see that:
+1
+============================================================
+ROUND 5/6  |  best = 116550.3000
+============================================================
+
+  [Explorer] experiment #13
+    CRASH  | Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #14
+    reverted score=116550.3000  delta=+0.0000
+    change: Looking at the board, I can see that the best kept score is 116550.3 from R4 Synthesizer, and the cu
+
+  [Synthesizer] experiment #15
+    reverted score=500000.0000  delta=-383449.7000
+    change: Looking at the board, I can see that:
+1
+============================================================
+ROUND 6/6  |  best = 116550.3000
+============================================================
+
+  [Explorer] experiment #16
+    KEPT     score=67830.3000  delta=+48720.0000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #17
+    reverted score=67830.3000  delta=+0.0000
+    change: Looking at the board, I can see that Explorer R6 achieved a major breakthrough with score 67830.3, i
+
+  [Synthesizer] experiment #18
+    reverted score=500000.0000  delta=-432169.7000
+    change: Looking at the board, I can see that Explorer R6 achieved a major breakthrough with score 67830.3, w
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    213836.7000
+  Final best:  67830.3000
+  Improvement: +146006.4000 (+68.3%)
+  Kept:        6/18
+  Board:       /tmp/ablation_scheduler_full_ujvhfqhx/scheduler/board.json
+  Tree nodes:  7
+  Backtracks:  0
+  Max depth:   7
+============================================================
+-> score=67830.30 (839.9s)
+[3/9] scheduler | full | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_full_68qa48rz/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_full_68qa48rz/scheduler/target/scheduler.py, /tmp/ablation_scheduler_full_68qa48rz/scheduler/target/heuristics.py, /tmp/ablation_scheduler_full_68qa48rz/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    KEPT     score=132198.0000  delta=+81638.7000
+    change: I'll implement a priority-based dispatching approach using the EDD (Earliest Due Date) rule combined
+
+  [Optimizer] experiment #2
+    reverted score=136150.4000  delta=-3952.4000
+    change: Looking at the board, I see that Explorer's change to EDD/ATC dispatching resulted in a very poor sc
+
+  [Synthesizer] experiment #3
+    KEPT     score=121478.1000  delta=+10719.9000
+    change: Looking at the board, I see that Explorer tried EDD/ATC dispatching and got a terrible score (132198
+============================================================
+ROUND 2/6  |  best = 121478.1000
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=128967.2000  delta=-7489.1000
+    change: Looking at the board, I see that both EDD/ATC approaches failed catastrophically with scores around 
+
+  [Optimizer] experiment #5
+    reverted score=123626.0000  delta=-2147.9000
+    change: Looking at the board, I see that EDD/ATC dispatching approaches have failed catastrophically with sc
+
+  [Synthesizer] experiment #6
+    reverted score=175936.3000  delta=-54458.2000
+    change: Looking at the board, I see that all EDD/ATC dispatching approaches have failed catastrophically wit
+============================================================
+ROUND 3/6  |  best = 121478.1000
+============================================================
+
+  [Explorer] experiment #7
+    CRASH  | Looking at the board, I see that all EDD/ATC dispatching approaches have failed 
+
+  [Optimizer] experiment #8
+    reverted score=145848.8000  delta=-24370.7000
+    change: Looking at the board, I see that all EDD/ATC dispatching approaches have failed catastrophically wit
+
+  [Synthesizer] experiment #9
+    KEPT     score=110517.8000  delta=+10960.3000
+    change: Looking at the board, I see that all EDD/ATC dispatching approaches have failed catastrophically wit
+============================================================
+ROUND 4/6  |  best = 110517.8000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=166195.0000  delta=-55677.2000
+    change: Looking at the board, I see that all EDD/ATC dispatching approaches have failed catastrophically wit
+
+  [Optimizer] experiment #11
+    KEPT     score=95228.7000  delta=+15289.1000
+    change: Looking at the board, I see that all EDD/ATC dispatching approaches have failed catastrophically wit
+
+  [Synthesizer] experiment #12
+    reverted score=97931.9000  delta=-2703.2000
+    change: Looking at the board, I see a clear pattern: all EDD/ATC/Covert priority-based dispatching rules hav
+============================================================
+ROUND 5/6  |  best = 95228.7000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=159501.3000  delta=-64272.6000
+    change: Looking at the board, I see that all priority-based dispatching rules (EDD, ATC, COVERT, WSPT) have
+
+  [Optimizer] experiment #14
+    reverted score=95228.7000  delta=+0.0000
+    change: Looking at the board, I see that all priority-based dispatching rules have failed catastrophically
+
+  [Synthesizer] experiment #15
+    KEPT     score=92167.9000  delta=+3060.8000
+    change: Looking at the board, I see that all priority-based dispatching rules have failed catastrophically, 
+============================================================
+ROUND 6/6  |  best = 92167.9000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=500000.0000  delta=-407832.1000
+    change: Looking at the board, I see that all priority-based dispatching rules have failed catastrophically
+
+  [Optimizer] experiment #17
+    reverted score=134604.1000  delta=-42436.2000
+    change: Looking at the board, I see that all priority-based dispatching rules have failed catastrophically w
+
+  [Synthesizer] experiment #18
+    reverted score=193420.9000  delta=-101253.0000
+    change: Looking at the board, I see a clear pattern: all priority-based dispatching rules (EDD, ATC, COVERT,
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    213836.7000
+  Final best:  92167.9000
+  Improvement: +121668.8000 (+56.9%)
+  Kept:        5/18
+  Board:       /tmp/ablation_scheduler_full_68qa48rz/scheduler/board.json
+  Tree nodes:  6
+  Backtracks:  0
+  Max depth:   6
+============================================================
+-> score=92167.90 (596.0s)
+[4/9] scheduler | no_backtrack | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_no_backtrack_as2jzr_b/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_no_backtrack_as2jzr_b/scheduler/target/scheduler.py, /tmp/ablation_scheduler_no_backtrack_as2jzr_b/scheduler/target/heuristics.py, /tmp/ablation_scheduler_no_backtrack_as2jzr_b/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll implement a priority-based dispatching rule system with ATC (Apparent Tardi
+
+  [Optimizer] experiment #2
+    KEPT     score=80664.3000  delta=+133172.4000
+    change: Looking at the failed experiment, it seems the ATC-based approach caused issues
+
+  [Synthesizer] experiment #3
+    KEPT     score=76432.4000  delta=+4231.9000
+    change: Looking at the board, I see that ATC-based dispatching failed completely (score 0, meaning invalid s
+============================================================
+ROUND 2/6  |  best = 76432.4000
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=123826.4000  delta=-47394.0000
+    change: Looking at the board, I see that ATC-based dispatching failed completely (score 0, invalid schedules
+
+  [Optimizer] experiment #5
+    reverted score=412073.0000  delta=-335640.6000
+    change: Looking at the board, I see that my previous change to EDD was kept (score=80664.3), but the score i
+
+  [Synthesizer] experiment #6
+    reverted score=115278.1000  delta=-38845.7000
+    change: Looking at the board, I see that:
+1
+============================================================
+ROUND 3/6  |  best = 76432.4000
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=500000.0000  delta=-423567.6000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #8
+    reverted score=123848.9000  delta=-47416.5000
+    change: Looking at the board, I see that EDD was kept with score 80664.3, but my attempt to add local search
+
+  [Synthesizer] experiment #9
+    reverted score=76838.4000  delta=-406.0000
+    change: Looking at the board, I see that:
+1
+============================================================
+ROUND 4/6  |  best = 76432.4000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=102238.6000  delta=-25806.2000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #11
+    reverted score=76432.4000  delta=+0.0000
+    change: Looking at the board, I see that EDD was kept with score 80664.3, but many attempts to improve it ha
+
+  [Synthesizer] experiment #12
+    reverted score=80306.9000  delta=-3874.5000
+    change: Looking at the board, I see that:
+1
+============================================================
+ROUND 5/6  |  best = 76432.4000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=185732.4000  delta=-109300.0000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #14
+    KEPT     score=65759.4000  delta=+10673.0000
+    change: Looking at the board, I see that EDD was kept with score 80664.3, and many attempts to improve it ha
+
+  [Synthesizer] experiment #15
+    KEPT     score=53373.4000  delta=+12386.0000
+    change: Looking at the board, I see that:
+1
+============================================================
+ROUND 6/6  |  best = 53373.4000
+============================================================
+
+  [Explorer] experiment #16
+    KEPT     score=46209.9000  delta=+7163.5000
+    change: Looking at the board, I see that EDD is the best so far with ~53k-80k, but all attempts to improve i
+
+  [Optimizer] experiment #17
+    reverted score=47796.9000  delta=-1587.0000
+    change: Looking at the board, I see that EDD with weight/due scoring was kept at 65759.4 (R5), and the best 
+
+  [Synthesizer] experiment #18
+    reverted score=500000.0000  delta=-453790.1000
+    change: Looking at the board, I see that:
+1
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    213836.7000
+  Final best:  46209.9000
+  Improvement: +167626.8000 (+78.4%)
+  Kept:        5/18
+  Board:       /tmp/ablation_scheduler_no_backtrack_as2jzr_b/scheduler/board.json
+============================================================
+-> score=46209.90 (742.0s)
+[5/9] scheduler | no_backtrack | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_no_backtrack_lzv2jn7g/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_no_backtrack_lzv2jn7g/scheduler/target/scheduler.py, /tmp/ablation_scheduler_no_backtrack_lzv2jn7g/scheduler/target/heuristics.py, /tmp/ablation_scheduler_no_backtrack_lzv2jn7g/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll implement a complete Priority Dispatching Rule (PDR) system with ATC (Appar
+
+  [Optimizer] experiment #2
+    CRASH  | I'll make a minimal incremental improvement by implementing a simple EDD (Earlie
+
+  [Synthesizer] experiment #3
+    KEPT     score=195202.8000  delta=+18633.9000
+    change: Looking at the board, both previous attempts failed with score=0.0000, which suggests they likely pr
+============================================================
+ROUND 2/6  |  best = 195202.8000
+============================================================
+
+  [Explorer] experiment #4
+    KEPT     score=97109.4000  delta=+98093.4000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #5
+    reverted score=97109.4000  delta=+0.0000
+    change: Looking at the board, I see that Explorer R2 achieved a score of 97109.4000 with what appears to be
+
+  [Synthesizer] experiment #6
+    reverted score=97132.1000  delta=-22.7000
+    change: Looking at the board, I see that:
+============================================================
+ROUND 3/6  |  best = 97109.4000
+============================================================
+
+  [Explorer] experiment #7
+    CRASH  | Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #8
+    reverted score=97109.4000  delta=+0.0000
+    change: Looking at the board, I see that Explorer R2 achieved a score of 97109.4000 which is the current bes
+
+  [Synthesizer] experiment #9
+    reverted score=103725.2000  delta=-6615.8000
+    change: Looking at the board, I see that:
+============================================================
+ROUND 4/6  |  best = 97109.4000
+============================================================
+
+  [Explorer] experiment #10
+    KEPT     score=95463.4000  delta=+1646.0000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #11
+    reverted score=96607.2000  delta=-1143.8000
+    change: Looking at the board, I see that R4 Explorer achieved a score of 95463.4000, which is better than R2
+
+  [Synthesizer] experiment #12
+    CRASH  | Looking at the board, I see that:
+============================================================
+ROUND 5/6  |  best = 95463.4000
+============================================================
+
+  [Explorer] experiment #13
+    KEPT     score=88375.3000  delta=+7088.1000
+    change: Looking at the board, I see that:
+1
+
+  [Optimizer] experiment #14
+    reverted score=88375.3000  delta=+0.0000
+    change: Looking at the board, I see that R5 Explorer achieved a score of 88375.3000, which is the current be
+
+  [Synthesizer] experiment #15
+    reverted score=500000.0000  delta=-411624.7000
+    change: Looking at the board, I see that:
+============================================================
+ROUND 6/6  |  best = 88375.3000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=88375.3000  delta=+0.0000
+    change: Looking at the board, I see that my R5 Explorer achieved the best score of 88375.3000
+
+  [Optimizer] experiment #17
+    reverted score=500000.0000  delta=-411624.7000
+    change: Looking at the board, I see that R5 Explorer achieved a score of 88375.3000 which is the current bes
+
+  [Synthesizer] experiment #18
+    reverted score=500000.0000  delta=-411624.7000
+    change: Looking at the board, I see that R5 Explorer achieved the best score of 88375.3000, and my own R1 Sy
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    213836.7000
+  Final best:  88375.3000
+  Improvement: +125461.4000 (+58.7%)
+  Kept:        4/18
+  Board:       /tmp/ablation_scheduler_no_backtrack_lzv2jn7g/scheduler/board.json
+============================================================
+-> score=88375.30 (814.4s)
+[6/9] scheduler | no_backtrack | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_no_backtrack_s78bxio0/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_no_backtrack_s78bxio0/scheduler/target/scheduler.py, /tmp/ablation_scheduler_no_backtrack_s78bxio0/scheduler/target/heuristics.py, /tmp/ablation_scheduler_no_backtrack_s78bxio0/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    KEPT     score=99055.0000  delta=+114781.7000
+    change: I'll implement a dispatching rule-based scheduler with the ATC (Apparent Tardiness Cost) rule, which
+
+  [Optimizer] experiment #2
+    reverted score=109925.6000  delta=-10870.6000
+    change: Looking at the board, the ATC rule was already tried and got a score of 99055, which is quite high (
+
+  [Synthesizer] experiment #3
+    reverted score=99055.0000  delta=+0.0000
+    change: Looking at the board, the ATC rule was tried with a score of 99055, which is extremely high compared
+============================================================
+ROUND 2/6  |  best = 99055.0000
+============================================================
+
+  [Explorer] experiment #4
+    KEPT     score=89635.5000  delta=+9419.5000
+    change: Looking at the board, the ATC rule produced a very high score (99055), which is much worse than the 
+
+  [Optimizer] experiment #5
+    reverted score=99109.4000  delta=-9473.9000
+    change: Looking at the board, I see that ATC-based approaches have failed with very high scores (99055, 8963
+
+  [Synthesizer] experiment #6
+    KEPT     score=82532.4000  delta=+7103.1000
+    change: Looking at the board, I can see that ATC-based approaches have consistently failed with extremely hi
+============================================================
+ROUND 3/6  |  best = 82532.4000
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=176516.3000  delta=-93983.9000
+    change: Looking at the board, I can see that ATC-based approaches have consistently failed with extremely hi
+
+  [Optimizer] experiment #8
+    KEPT     score=78696.1000  delta=+3836.3000
+    change: Looking at the board, I see that ATC-based approaches have consistently failed with extremely high s
+
+  [Synthesizer] experiment #9
+    reverted score=129468.8000  delta=-50772.7000
+    change: Looking at the board, I can see that all ATC-based approaches have failed catastrophically with scor
+============================================================
+ROUND 4/6  |  best = 78696.1000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=95706.8000  delta=-17010.7000
+    change: Looking at the board, I see that ATC-based approaches have consistently failed with extremely high s
+
+  [Optimizer] experiment #11
+    CRASH  | Looking at the board, I can see that ATC-based approaches have consistently fail
+
+  [Synthesizer] experiment #12
+    reverted score=82532.4000  delta=-3836.3000
+    change: Looking at the board, I can see that all ATC-based approaches have failed catastrophically with scor
+============================================================
+ROUND 5/6  |  best = 78696.1000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=154203.2000  delta=-75507.1000
+    change: Looking at the board, I can see that all ATC-based approaches have failed catastrophically with scor
+
+  [Optimizer] experiment #14
+    reverted score=97521.2000  delta=-18825.1000
+    change: Looking at the board, I can see that ATC-based approaches have consistently failed catastrophically
+
+  [Synthesizer] experiment #15
+    reverted score=155367.7000  delta=-76671.6000
+    change: Looking at the board, I can see that ATC-based approaches have consistently failed catastrophically 
+============================================================
+ROUND 6/6  |  best = 78696.1000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=192205.5000  delta=-113509.4000
+    change: Looking at the board, I can see that all ATC-based dispatching approaches have failed catastrophical
+
+  [Optimizer] experiment #17
+    reverted score=93894.3000  delta=-15198.2000
+    change: Looking at the board, I can see that the best kept result is 78696.1 from R3, which used a simple we
+
+  [Synthesizer] experiment #18
+    reverted score=95321.7000  delta=-16625.6000
+    change: Looking at the board, I can see that all ATC/COVERT-based dispatching approaches have failed catastr
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    213836.7000
+  Final best:  78696.1000
+  Improvement: +135140.6000 (+63.2%)
+  Kept:        4/18
+  Board:       /tmp/ablation_scheduler_no_backtrack_s78bxio0/scheduler/board.json
+============================================================
+-> score=78696.10 (787.3s)
+[7/9] scheduler | single_agent | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_single_agent_c47nk5as/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_single_agent_c47nk5as/scheduler/target/scheduler.py, /tmp/ablation_scheduler_single_agent_c47nk5as/scheduler/target/heuristics.py, /tmp/ablation_scheduler_single_agent_c47nk5as/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    KEPT     score=77611.8000  delta=+136224.9000
+    change: Looking at this problem, I need to minimize weighted tardiness in a flexible job shop
+============================================================
+ROUND 2/6  |  best = 77611.8000
+============================================================
+
+  [Explorer] experiment #2
+    KEPT     score=71780.6000  delta=+5831.2000
+    change: Looking at the current state, the baseline ATC implementation is working but likely has room for imp
+============================================================
+ROUND 3/6  |  best = 71780.6000
+============================================================
+
+  [Explorer] experiment #3
+    reverted score=193023.5000  delta=-121242.9000
+    change: Looking at the board, I see the current approach is using priority-based dispatching with COVERT/ATC
+============================================================
+ROUND 4/6  |  best = 71780.6000
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=500000.0000  delta=-428219.4000
+    change: Looking at the board, I see that R2 improved upon R1 by adding local search, but R3's more aggressiv
+============================================================
+ROUND 5/6  |  best = 71780.6000
+============================================================
+
+  [Explorer] experiment #5
+    reverted score=159778.1000  delta=-87997.5000
+    change: Looking at the board, I see R2 improved upon R1 by adding basic local search, but subsequent attempt
+
+  BACKTRACK #1: score 71780.6000 -> 77611.8000
+    from: node 2 (Explorer)
+    to:   node 1 (Explorer)
+============================================================
+ROUND 6/6  |  best = 77611.8000
+============================================================
+
+  [Explorer] experiment #6
+    reverted score=110988.1000  delta=-33376.3000
+    change: Looking at the board, I see that R2 improved upon R1 by adding basic local search, but subsequent at
+
+  Restored global best: 71780.6000
+
+============================================================
+DONE
+  Experiments: 6
+  Baseline:    213836.7000
+  Final best:  71780.6000
+  Improvement: +142056.1000 (+66.4%)
+  Kept:        2/6
+  Board:       /tmp/ablation_scheduler_single_agent_c47nk5as/scheduler/board.json
+  Tree nodes:  3
+  Backtracks:  1
+  Max depth:   3
+============================================================
+-> score=71780.60 (363.9s)
+[8/9] scheduler | single_agent | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_single_agent_nfkn2ecl/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_single_agent_nfkn2ecl/scheduler/target/scheduler.py, /tmp/ablation_scheduler_single_agent_nfkn2ecl/scheduler/target/heuristics.py, /tmp/ablation_scheduler_single_agent_nfkn2ecl/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    reverted score=500000.0000  delta=-286163.3000
+    change: I'll start by implementing a more sophisticated dispatching rule that considers weighted tardiness d
+============================================================
+ROUND 2/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #2
+    reverted score=441128.9000  delta=-227292.2000
+    change: Looking at the failed experiment, it seems the sophisticated dispatching rule caused constraint viol
+============================================================
+ROUND 3/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #3
+    KEPT     score=210297.0000  delta=+3539.7000
+    change: I see the pattern - my previous attempts at sophisticated dispatching rules introduced constraint vi
+============================================================
+ROUND 4/6  |  best = 210297.0000
+============================================================
+
+  [Explorer] experiment #4
+    KEPT     score=192321.1000  delta=+17975.9000
+    change: I see the pattern now - R3's simpler approach worked by avoiding constraint violations
+============================================================
+ROUND 5/6  |  best = 192321.1000
+============================================================
+
+  [Explorer] experiment #5
+    KEPT     score=93289.0000  delta=+99032.1000
+    change: Looking at the board, I see that R3 and R4 succeeded by simplifying rather than complicating
+============================================================
+ROUND 6/6  |  best = 93289.0000
+============================================================
+
+  [Explorer] experiment #6
+    reverted score=96185.0000  delta=-2896.0000
+    change: Looking at the board, I see R3-R5 succeeded by simplifying and avoiding constraint violations
+
+============================================================
+DONE
+  Experiments: 6
+  Baseline:    213836.7000
+  Final best:  93289.0000
+  Improvement: +120547.7000 (+56.4%)
+  Kept:        3/6
+  Board:       /tmp/ablation_scheduler_single_agent_nfkn2ecl/scheduler/board.json
+  Tree nodes:  4
+  Backtracks:  0
+  Max depth:   4
+============================================================
+-> score=93289.00 (212.0s)
+[9/9] scheduler | single_agent | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_scheduler_single_agent_a7f6_jxg/scheduler/task.md
+  Targets:   /tmp/ablation_scheduler_single_agent_a7f6_jxg/scheduler/target/scheduler.py, /tmp/ablation_scheduler_single_agent_a7f6_jxg/scheduler/target/heuristics.py, /tmp/ablation_scheduler_single_agent_a7f6_jxg/scheduler/target/config.py
+  Eval:      python3 eval.py
+  Direction: minimize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer
+
+Evaluating current state (1 runs)...
+Baseline: 213836.7000
+
+============================================================
+ROUND 1/6  |  best = 213836.7000
+============================================================
+
+  [Explorer] experiment #1
+    KEPT     score=118531.1000  delta=+95305.6000
+    change: I'll start with a safe but effective improvement: implementing the EDD (Earliest Due Date) dispatchi
+============================================================
+ROUND 2/6  |  best = 118531.1000
+============================================================
+
+  [Explorer] experiment #2
+    KEPT     score=87119.4000  delta=+31411.7000
+    change: Looking at the board, my R1 change was kept but the score is still quite high (~118k)
+============================================================
+ROUND 3/6  |  best = 87119.4000
+============================================================
+
+  [Explorer] experiment #3
+    reverted score=98848.8000  delta=-11729.4000
+    change: Looking at the board, my previous changes improved the score but it's still very high (~87k)
+============================================================
+ROUND 4/6  |  best = 87119.4000
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=87487.1000  delta=-367.7000
+    change: Looking at the board, my previous attempts have had mixed results - R1 and R2 were kept but R3 was r
+============================================================
+ROUND 5/6  |  best = 87119.4000
+============================================================
+
+  [Explorer] experiment #5
+    reverted score=500000.0000  delta=-412880.6000
+    change: Looking at the board, I see that R1 and R2 were kept (both improvements), but R3 and R4 were reverte
+
+  BACKTRACK #1: score 87119.4000 -> 118531.1000
+    from: node 2 (Explorer)
+    to:   node 1 (Explorer)
+============================================================
+ROUND 6/6  |  best = 118531.1000
+============================================================
+
+  [Explorer] experiment #6
+    reverted score=187259.9000  delta=-68728.8000
+    change: Looking at the board, I see that R1 and R2 were kept (improving from ~214k to ~87k), but R3, R4, and
+
+  Restored global best: 87119.4000
+
+============================================================
+DONE
+  Experiments: 6
+  Baseline:    213836.7000
+  Final best:  87119.4000
+  Improvement: +126717.3000 (+59.3%)
+  Kept:        2/6
+  Board:       /tmp/ablation_scheduler_single_agent_a7f6_jxg/scheduler/board.json
+  Tree nodes:  3
+  Backtracks:  1
+  Max depth:   3
+============================================================
+-> score=87119.40 (361.0s)
+
+Done. 9 runs in 5217s
+Raw results: /root/projects/swarm-research/experiments/results/ablation_scheduler_raw.json
+Summary:     /root/projects/swarm-research/experiments/results/ablation_scheduler_summary.md
+
+# Scheduler Ablation Results
+
+Rounds: 6 | Runs: 3
+
+| Config | Baseline | Final (mean +/- std) | Delta % | Backtracks |
+|--------|----------|----------------------|---------|------------|
+| full | 213837 | 97750 +/- 33066 | -54.3 +/- 15.5% | 0.3 |
+| no_backtrack | 213837 | 71094 +/- 22087 | -66.8 +/- 10.3% | 0.0 |
+| single_agent | 213837 | 84063 +/- 11075 | -60.7 +/- 5.2% | 0.7 |
+
+## Per-run details
+
+- full | run 1 -> score=133251 (500.4s)
+- full | run 2 -> score=67830 (839.9s)
+- full | run 3 -> score=92168 (596.0s)
+- no_backtrack | run 1 -> score=46210 (742.0s)
+- no_backtrack | run 2 -> score=88375 (814.4s)
+- no_backtrack | run 3 -> score=78696 (787.3s)
+- single_agent | run 1 -> score=71781 (363.9s)
+- single_agent | run 2 -> score=93289 (212.0s)
+- single_agent | run 3 -> score=87119 (361.0s)
+

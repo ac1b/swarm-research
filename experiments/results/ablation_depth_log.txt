@@ -1,0 +1,1085 @@
+Backtrack depth scaling: game-ai | bt=[1, 2, 5] | 3 runs each = 9 total
+  Rounds: 6 | Agents: Explorer, Optimizer, Synthesizer
+  (bt=0 and bt=3 already in main ablation results)
+
+[1/9] bt=1 | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt1_uyvcwmyh/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt1_uyvcwmyh/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt1_uyvcwmyh/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | Looking at this fresh, I'll implement a solid foundation with alpha-beta search 
+
+  [Optimizer] experiment #2
+    KEPT     score=58.7500  delta=+33.1300
+    change: Looking at the failed first attempt, I'll start with the simplest possible working solution: a basic
+
+  [Synthesizer] experiment #3
+    reverted score=53.7500  delta=-5.0000
+    change: Looking at the board, I see that a simple greedy approach (maximizing flips) got 58.75 points, while
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    KEPT     score=71.2500  delta=+12.5000
+    change: Looking at the board, I see that complex alpha-beta implementations have failed completely (0.0) or 
+
+  [Optimizer] experiment #5
+    reverted score=71.2500  delta=+0.0000
+    change: Looking at the board, I see that R2 Explorer achieved 71.25 with some improvement over the 58.75 gre
+
+  [Synthesizer] experiment #6
+    KEPT     score=72.5000  delta=+1.2500
+    change: Looking at the board, I see that R2 Explorer achieved 71.25 with some improvement over the 58.75 gre
+============================================================
+ROUND 3/6  |  best = 72.5000
+============================================================
+
+  [Explorer] experiment #7
+    KEPT     score=73.7500  delta=+1.2500
+    change: Looking at the board, I see that complex alpha-beta implementations have failed completely, while th
+
+  [Optimizer] experiment #8
+    reverted score=73.7500  delta=+0.0000
+    change: Looking at the board, I see that complex alpha-beta implementations have consistently failed (0.0 or
+
+  [Synthesizer] experiment #9
+    KEPT     score=75.0000  delta=+1.2500
+    change: Looking at the board, I see that complex alpha-beta implementations have consistently failed (0.0 or
+============================================================
+ROUND 4/6  |  best = 75.0000
+============================================================
+
+  [Explorer] experiment #10
+    CRASH  | Looking at the board, I see that complex search algorithms consistently fail (al
+
+  [Optimizer] experiment #11
+    reverted score=73.1200  delta=-1.8800
+    change: Looking at the board, I see that simple pattern-based evaluation has climbed from 58.75 → 71.25 → 72
+
+  [Synthesizer] experiment #12
+    KEPT     score=87.5000  delta=+12.5000
+    change: Looking at the board, I see that simple pattern-based evaluation has climbed from 58.75 → 71.25 → 72
+============================================================
+ROUND 5/6  |  best = 87.5000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=81.2500  delta=-6.2500
+    change: Looking at the board, I see that simple pattern-based evaluation climbed steadily to 75.0, then R4 S
+
+  [Optimizer] experiment #14
+    reverted score=87.5000  delta=+0.0000
+    change: Looking at the board, I see that R4 Synthesizer made a huge jump from 75.0 to 87.5, which is the bes
+
+  [Synthesizer] experiment #15
+    reverted score=87.5000  delta=+0.0000
+    change: Looking at the board, I see that R4 Synthesizer made a huge jump from 75.0 to 87.5, which is the bes
+
+  BACKTRACK #1: score 87.5000 -> 75.0000
+    from: node 6 (Synthesizer)
+    to:   node 5 (Synthesizer)
+============================================================
+ROUND 6/6  |  best = 75.0000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=73.7500  delta=-1.2500
+    change: Looking at the board, I see that R4 Synthesizer made a huge jump from 75.0 to 87.5, but then subsequ
+
+  [Optimizer] experiment #17
+    reverted score=70.0000  delta=-5.0000
+    change: Looking at the board, I see that R4 Synthesizer achieved 87.5 (the best score) but subsequent attemp
+
+  [Synthesizer] experiment #18
+    reverted score=75.0000  delta=+0.0000
+    change: Looking at the board, I see that R4 Synthesizer achieved 87.5 (the best score) but subsequent attemp
+
+  BACKTRACK #2: score 75.0000 -> 87.5000
+    from: node 5 (Synthesizer)
+    to:   node 6 (Synthesizer)
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  87.5000
+  Improvement: +61.8800 (+241.5%)
+  Kept:        6/18
+  Board:       /tmp/ablation_game-ai_bt1_uyvcwmyh/game-ai/board.json
+  Tree nodes:  7
+  Backtracks:  2
+  Max depth:   7
+============================================================
+-> score=87.50 bt=2 (1222.6s)
+[2/9] bt=1 | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt1_1c8vetfo/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt1_1c8vetfo/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt1_1c8vetfo/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | Looking at this fresh, I need to build a strong Othello AI from scratch
+
+  [Optimizer] experiment #2
+    KEPT     score=58.7500  delta=+33.1300
+    change: I'll start with a minimal, focused improvement
+
+  [Synthesizer] experiment #3
+    CRASH  | Looking at the board, I see one successful experiment (score=58.75) and one fail
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=43.7500  delta=-15.0000
+    change: Looking at the board, I see the Optimizer succeeded with a minimal change while my full rewrite fail
+
+  [Optimizer] experiment #5
+    KEPT     score=68.7500  delta=+10.0000
+    change: Looking at the board, I see my R1 minimal greedy change succeeded (58.75), while full rewrites faile
+
+  [Synthesizer] experiment #6
+    reverted score=57.5000  delta=-11.2500
+    change: Looking at the board, I see the Optimizer has had two successful minimal improvements (58.75 → 68.75
+============================================================
+ROUND 3/6  |  best = 68.7500
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=15.0000  delta=-53.7500
+    change: Looking at the board, I see that complex implementations (alpha-beta search, full rewrites) have con
+
+  [Optimizer] experiment #8
+    reverted score=59.3800  delta=-9.3700
+    change: Looking at the board, I see that minimal changes to the greedy strategy have worked twice (58.75 → 6
+
+  [Synthesizer] experiment #9
+    reverted score=52.5000  delta=-16.2500
+    change: Looking at the board, I see that minimal changes to the greedy strategy have succeeded twice (reachi
+
+  BACKTRACK #1: score 68.7500 -> 58.7500
+    from: node 2 (Optimizer)
+    to:   node 1 (Optimizer)
+============================================================
+ROUND 4/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #10
+    KEPT     score=60.6200  delta=+1.8700
+    change: Looking at the board, I see that minimal changes to the greedy strategy have succeeded twice (reachi
+
+  [Optimizer] experiment #11
+    KEPT     score=61.2500  delta=+0.6300
+    change: Looking at the board, I see that my R2 change was reverted and the branch was abandoned
+
+  [Synthesizer] experiment #12
+    reverted score=52.5000  delta=-8.7500
+    change: Looking at the board, I see the current branch is at 61.25, while the abandoned branch reached 68.75
+============================================================
+ROUND 5/6  |  best = 61.2500
+============================================================
+
+  [Explorer] experiment #13
+    CRASH  | Looking at the board, I see that minimal changes to the greedy strategy have suc
+
+  [Optimizer] experiment #14
+    reverted score=60.0000  delta=-1.2500
+    change: Looking at the board, I see the current branch is at 61.25, while an abandoned branch reached 68.75 
+
+  [Synthesizer] experiment #15
+    reverted score=49.3800  delta=-11.8700
+    change: Looking at the board, I see that the current branch has reached 61.25 through minimal changes, while
+
+  BACKTRACK #2: score 61.2500 -> 68.7500
+    from: node 4 (Optimizer)
+    to:   node 2 (Optimizer)
+============================================================
+ROUND 6/6  |  best = 68.7500
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=58.1300  delta=-10.6200
+    change: Looking at the board, I see that the current branch is at 61.25 after backtracking, while an abandon
+
+  [Optimizer] experiment #17
+    reverted score=65.0000  delta=-3.7500
+    change: Looking at the board, I see we're in a backtracking state
+
+  [Synthesizer] experiment #18
+    reverted score=66.2500  delta=-2.5000
+    change: Looking at the board, I see that minimal greedy changes have succeeded while complex implementations
+
+  BACKTRACK #3: score 68.7500 -> 60.6200
+    from: node 2 (Optimizer)
+    to:   node 3 (Explorer)
+
+  Restored global best: 68.7500
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  68.7500
+  Improvement: +43.1300 (+168.3%)
+  Kept:        4/18
+  Board:       /tmp/ablation_game-ai_bt1_1c8vetfo/game-ai/board.json
+  Tree nodes:  5
+  Backtracks:  3
+  Max depth:   4
+============================================================
+-> score=68.75 bt=3 (843.2s)
+[3/9] bt=1 | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt1_962o2opx/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt1_962o2opx/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt1_962o2opx/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll implement a solid foundation with alpha-beta search and proper evaluation
+
+  [Optimizer] experiment #2
+    KEPT     score=58.7500  delta=+33.1300
+    change: I'll implement a minimal but functional improvement: a simple greedy algorithm that maximizes immedi
+
+  [Synthesizer] experiment #3
+    reverted score=53.7500  delta=-5.0000
+    change: Looking at the board, I see the greedy approach (maximizing immediate flips) achieved 58.75, while t
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=35.6200  delta=-23.1300
+    change: Looking at the board, I see that the simple greedy flip-counting approach scored 58.75, while two al
+
+  [Optimizer] experiment #5
+    reverted score=46.2500  delta=-12.5000
+    change: Looking at the board, I see that the simple greedy flip-counting approach scored 58.75, while alpha-
+
+  [Synthesizer] experiment #6
+    reverted score=47.5000  delta=-11.2500
+    change: Looking at the board, I see that the simple greedy flip-counting approach scored 58.75, while all al
+
+  BACKTRACK #1: score 58.7500 -> 25.6200
+    from: node 1 (Optimizer)
+    to:   node 0 (baseline)
+============================================================
+ROUND 3/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #7
+    KEPT     score=56.2500  delta=+30.6300
+    change: Looking at the board, I see that all alpha-beta attempts have failed (0-53.75 scores), while the sim
+
+  [Optimizer] experiment #8
+    reverted score=44.3800  delta=-11.8700
+    change: Looking at the board, I see that the current kept approach (Explorer R3) scored 56.25, which is slig
+
+  [Synthesizer] experiment #9
+    KEPT     score=63.1200  delta=+6.8700
+    change: Looking at the board, I see that all alpha-beta attempts have failed (0-53.75 scores), while simple 
+============================================================
+ROUND 4/6  |  best = 63.1200
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=31.8700  delta=-31.2500
+    change: Looking at the board, I see that alpha-beta search has consistently failed (0-53.75 scores), while s
+
+  [Optimizer] experiment #11
+    reverted score=50.0000  delta=-13.1200
+    change: Looking at the board, I see that the current best approach is a simple greedy flip-counting strategy
+
+  [Synthesizer] experiment #12
+    reverted score=56.8800  delta=-6.2400
+    change: Looking at the board, I see that the current best approach (Synthesizer R3, score=63.12) uses a 1-pl
+
+  BACKTRACK #2: score 63.1200 -> 58.7500
+    from: node 3 (Synthesizer)
+    to:   node 1 (Optimizer)
+============================================================
+ROUND 5/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=47.5000  delta=-11.2500
+    change: Looking at the board, I see that the current best approach (Synthesizer R3, score=63.12) uses a 1-pl
+
+  [Optimizer] experiment #14
+    KEPT     score=60.0000  delta=+1.2500
+    change: Looking at the board, I see that the current best kept approach is my own R1 implementation (score=5
+
+  [Synthesizer] experiment #15
+    KEPT     score=80.6200  delta=+20.6200
+    change: Looking at the board, I see that the current best kept approach is Optimizer R5 at 60.00, which came
+============================================================
+ROUND 6/6  |  best = 80.6200
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=73.7500  delta=-6.8700
+    change: Looking at the board, I see that the current best approach is Synthesizer R5 with 80.62%, which came
+
+  [Optimizer] experiment #17
+    reverted score=58.7500  delta=-21.8700
+    change: Looking at the board, I see the current best approach is Synthesizer R5 with 80.62%, which came from
+
+  [Synthesizer] experiment #18
+    reverted score=77.5000  delta=-3.1200
+    change: Looking at the board, I see the current best approach is Synthesizer R5 with 80.62%, which uses a si
+
+  BACKTRACK #3: score 80.6200 -> 56.2500
+    from: node 5 (Synthesizer)
+    to:   node 2 (Explorer)
+
+  Restored global best: 80.6200
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  80.6200
+  Improvement: +55.0000 (+214.7%)
+  Kept:        5/18
+  Board:       /tmp/ablation_game-ai_bt1_962o2opx/game-ai/board.json
+  Tree nodes:  6
+  Backtracks:  3
+  Max depth:   4
+============================================================
+-> score=80.62 bt=3 (870.2s)
+[4/9] bt=2 | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt2_qht601ad/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt2_qht601ad/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt2_qht601ad/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll start with a solid foundation that combines proven Othello techniques: a go
+
+  [Optimizer] experiment #2
+    KEPT     score=46.2500  delta=+20.6300
+    change: I'll start with the simplest possible improvement: adding basic positional weights to the board eval
+
+  [Synthesizer] experiment #3
+    KEPT     score=50.0000  delta=+3.7500
+    change: Looking at the board, I see that the Optimizer's simple positional weights improvement worked (score
+============================================================
+ROUND 2/6  |  best = 50.0000
+============================================================
+
+  [Explorer] experiment #4
+    CRASH  | Looking at the board, I see that simple positional evaluation worked (Optimizer 
+
+  [Optimizer] experiment #5
+    CRASH  | Looking at the board, I see that simple positional evaluation worked (Optimizer 
+
+  [Synthesizer] experiment #6
+    KEPT     score=73.1200  delta=+23.1200
+    change: Looking at the board, I can see that simple 1-ply positional evaluation is working (score=50), while
+============================================================
+ROUND 3/6  |  best = 73.1200
+============================================================
+
+  [Explorer] experiment #7
+    KEPT     score=75.0000  delta=+1.8800
+    change: Looking at the board, I see that simple 1-ply evaluation is working (score=73.12), while all alpha-b
+
+  [Optimizer] experiment #8
+    KEPT     score=80.0000  delta=+5.0000
+    change: Looking at the board, I see that simple 1-ply positional evaluation is working (score=73.12), while 
+
+  [Synthesizer] experiment #9
+    reverted score=61.2500  delta=-18.7500
+    change: Looking at the board, I see that simple 1-ply positional evaluation has been steadily improving (now
+============================================================
+ROUND 4/6  |  best = 80.0000
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=61.2500  delta=-18.7500
+    change: Looking at the board, I see that simple 1-ply positional evaluation has steadily improved to 80.00, 
+
+  [Optimizer] experiment #11
+    reverted score=49.3800  delta=-30.6200
+    change: Looking at the board, I can see that simple 1-ply positional evaluation has reached 80.00, which is 
+
+  [Synthesizer] experiment #12
+    reverted score=62.5000  delta=-17.5000
+    change: Looking at the board, I see that simple 1-ply positional evaluation has reached 80.00, which is exce
+============================================================
+ROUND 5/6  |  best = 80.0000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=36.2500  delta=-43.7500
+    change: Looking at the board, I can see that simple 1-ply evaluation reached 80.00, but recent attempts to r
+
+  [Optimizer] experiment #14
+    reverted score=75.0000  delta=-5.0000
+    change: Looking at the board, I can see that simple 1-ply positional evaluation reached 80.00, but recent at
+
+  [Synthesizer] experiment #15
+    KEPT     score=86.2500  delta=+6.2500
+    change: Looking at the board, I can see that simple 1-ply positional evaluation reached 80.00, but recent at
+============================================================
+ROUND 6/6  |  best = 86.2500
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=55.6200  delta=-30.6300
+    change: Looking at the board, I can see that simple 1-ply positional evaluation reached 86.25 with Synthesiz
+
+  [Optimizer] experiment #17
+    reverted score=75.0000  delta=-11.2500
+    change: Looking at the board, I can see that simple 1-ply positional evaluation reached 86.25 with Synthesiz
+
+  [Synthesizer] experiment #18
+    KEPT     score=87.5000  delta=+1.2500
+    change: Looking at the board, I can see that simple 1-ply positional evaluation reached 86.25 with Synthesiz
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  87.5000
+  Improvement: +61.8800 (+241.5%)
+  Kept:        7/18
+  Board:       /tmp/ablation_game-ai_bt2_qht601ad/game-ai/board.json
+  Tree nodes:  8
+  Backtracks:  0
+  Max depth:   8
+============================================================
+-> score=87.50 bt=0 (1630.4s)
+[5/9] bt=2 | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt2_qe2wiab6/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt2_qe2wiab6/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt2_qe2wiab6/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll start with a solid foundation that combines proven Othello strategies
+
+  [Optimizer] experiment #2
+    CRASH  | I'll start with a minimal but effective change: implementing a basic positional 
+
+  [Synthesizer] experiment #3
+    KEPT     score=58.7500  delta=+33.1300
+    change: Looking at the board, I see two failed experiments with 0 scores
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=45.6200  delta=-13.1300
+    change: Looking at the board, I see two attempts at complex alpha-beta implementations both failed with 0 sc
+
+  [Optimizer] experiment #5
+    KEPT     score=73.7500  delta=+15.0000
+    change: Looking at the board, I see that complex implementations are failing with 0 scores, likely due to bu
+
+  [Synthesizer] experiment #6
+    CRASH  | Looking at the board, I see that complex alpha-beta implementations have been fa
+============================================================
+ROUND 3/6  |  best = 73.7500
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=36.2500  delta=-37.5000
+    change: Looking at the board, I see that complex alpha-beta implementations keep failing with 0 scores (bugs
+
+  [Optimizer] experiment #8
+    reverted score=46.8800  delta=-26.8700
+    change: Looking at the board, I see that complex alpha-beta implementations keep failing with 0 scores (bugs
+
+  [Synthesizer] experiment #9
+    KEPT     score=86.2500  delta=+12.5000
+    change: Looking at the board, I see that the successful approaches kept simple heuristics with minimal chang
+============================================================
+ROUND 4/6  |  best = 86.2500
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=68.7500  delta=-17.5000
+    change: Looking at the board, I see that simple heuristics are winning (86.25 best score) while complex alph
+
+  [Optimizer] experiment #11
+    KEPT     score=100.0000  delta=+13.7500
+    change: Looking at the board, I see that simple heuristics are winning (86.25 best score) while complex alph
+
+  [Synthesizer] experiment #12
+    reverted score=85.0000  delta=-15.0000
+    change: Looking at the board, I see that simple heuristics have achieved a perfect 100% score in R4 Optimize
+============================================================
+ROUND 5/6  |  best = 100.0000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=86.2500  delta=-13.7500
+    change: Looking at the board, I see that simple heuristics achieved a perfect 100% score in R4 Optimizer, wh
+
+  [Optimizer] experiment #14
+    reverted score=100.0000  delta=+0.0000
+    change: Looking at the board, I see that simple heuristics achieved a perfect 100% score in R4 Optimizer
+
+  [Synthesizer] experiment #15
+    reverted score=98.7500  delta=-1.2500
+    change: Looking at the board, I see that simple heuristics achieved a perfect 100% score in R4 Optimizer and
+============================================================
+ROUND 6/6  |  best = 100.0000
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=62.5000  delta=-37.5000
+    change: Looking at the board, I see that simple heuristics achieved a perfect 100% score in R4 Optimizer and
+
+  [Optimizer] experiment #17
+    reverted score=85.0000  delta=-15.0000
+    change: Looking at the board, I see that simple heuristics achieved a perfect 100% score in R4 Optimizer and
+
+  [Synthesizer] experiment #18
+    reverted score=85.0000  delta=-15.0000
+    change: Looking at the board, I see that simple heuristics achieved a perfect 100% score in R4 Optimizer and
+
+  BACKTRACK #1: score 100.0000 -> 86.2500
+    from: node 4 (Optimizer)
+    to:   node 3 (Synthesizer)
+
+  Restored global best: 100.0000
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  100.0000
+  Improvement: +74.3800 (+290.3%)
+  Kept:        4/18
+  Board:       /tmp/ablation_game-ai_bt2_qe2wiab6/game-ai/board.json
+  Tree nodes:  5
+  Backtracks:  1
+  Max depth:   5
+============================================================
+-> score=100.00 bt=1 (1218.8s)
+[6/9] bt=2 | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt2_2wm2lznq/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt2_2wm2lznq/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt2_2wm2lznq/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll start with a solid, conventional Othello AI that combines proven techniques
+
+  [Optimizer] experiment #2
+    KEPT     score=58.7500  delta=+33.1300
+    change: I'll make a minimal, incremental change to start
+
+  [Synthesizer] experiment #3
+    reverted score=57.5000  delta=-1.2500
+    change: Looking at the board, I see the Optimizer had success with a minimal change (score=58.75), while the
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=47.5000  delta=-11.2500
+    change: Looking at the board, I see the Optimizer succeeded with a minimal change (58.75) while my complex a
+
+  [Optimizer] experiment #5
+    reverted score=44.3800  delta=-14.3700
+    change: Looking at the board, I see the Optimizer's simple greedy approach (maximizing immediate flips) achi
+
+  [Synthesizer] experiment #6
+    reverted score=53.7500  delta=-5.0000
+    change: Looking at the board, I see that complex alpha-beta approaches have failed repeatedly (scores 0.0, 5
+============================================================
+ROUND 3/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=48.1200  delta=-10.6300
+    change: Looking at the board, I see that complex alpha-beta approaches have failed repeatedly while simple g
+
+  [Optimizer] experiment #8
+    KEPT     score=60.0000  delta=+1.2500
+    change: Looking at the board, I see that the simple greedy approach (maximizing immediate flips) achieved 58
+
+  [Synthesizer] experiment #9
+    KEPT     score=71.8800  delta=+11.8800
+    change: Looking at the board, I see that simple greedy (maximizing flips) has been the only successful appro
+============================================================
+ROUND 4/6  |  best = 71.8800
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=45.0000  delta=-26.8800
+    change: Looking at the board, I see that complex alpha-beta approaches have failed repeatedly while simple g
+
+  [Optimizer] experiment #11
+    KEPT     score=72.5000  delta=+0.6200
+    change: Looking at the board, I see that simple greedy (maximizing flips) has been the only successful appro
+
+  [Synthesizer] experiment #12
+    reverted score=72.5000  delta=+0.0000
+    change: Looking at the board, I see that simple greedy (maximizing flips) has been the successful approach, 
+============================================================
+ROUND 5/6  |  best = 72.5000
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=50.0000  delta=-22.5000
+    change: Looking at the board, I see that complex alpha-beta approaches have failed repeatedly while simple g
+
+  [Optimizer] experiment #14
+    reverted score=47.5000  delta=-25.0000
+    change: Looking at the board, I see the current best score is 72.5 with a simple greedy approach that maximi
+
+  [Synthesizer] experiment #15
+    reverted score=60.0000  delta=-12.5000
+    change: Looking at the board, I see that the best score is 72.5 with a simple greedy approach
+============================================================
+ROUND 6/6  |  best = 72.5000
+============================================================
+
+  [Explorer] experiment #16
+    KEPT     score=86.2500  delta=+13.7500
+    change: Looking at the board, I see that simple greedy with positional awareness has reached 72.5, while com
+
+  [Optimizer] experiment #17
+    reverted score=85.6200  delta=-0.6300
+    change: Looking at the board, I see that the R6 Explorer achieved a breakthrough with 86.25 using "simple gr
+
+  [Synthesizer] experiment #18
+    reverted score=62.5000  delta=-23.7500
+    change: Looking at the board, I see that R6 Explorer achieved a breakthrough with 86.25 using "simple greedy
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  86.2500
+  Improvement: +60.6300 (+236.7%)
+  Kept:        5/18
+  Board:       /tmp/ablation_game-ai_bt2_2wm2lznq/game-ai/board.json
+  Tree nodes:  6
+  Backtracks:  0
+  Max depth:   6
+============================================================
+-> score=86.25 bt=0 (1169.4s)
+[7/9] bt=5 | run 1 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt5_g9h0v200/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt5_g9h0v200/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt5_g9h0v200/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | Looking at this fresh, I need to build a solid foundation
+
+  [Optimizer] experiment #2
+    KEPT     score=58.7500  delta=+33.1300
+    change: I'll start with a minimal, focused improvement
+
+  [Synthesizer] experiment #3
+    CRASH  | Looking at the board, I see one successful experiment (score=58.75) and one fail
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=41.8800  delta=-16.8700
+    change: Looking at the board, the successful experiment (58.75) used a minimal focused improvement while my 
+
+  [Optimizer] experiment #5
+    reverted score=45.0000  delta=-13.7500
+    change: Looking at the board, the successful experiment (58.75) used a minimal focused improvement - just ma
+
+  [Synthesizer] experiment #6
+    reverted score=21.2500  delta=-37.5000
+    change: Looking at the board, I see the successful experiment (score=58.75) was a minimal focused improvemen
+============================================================
+ROUND 3/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #7
+    reverted score=43.7500  delta=-15.0000
+    change: Looking at the board, the successful experiment (58.75) was a minimal focused improvement - just max
+
+  [Optimizer] experiment #8
+    reverted score=55.6200  delta=-3.1300
+    change: Looking at the board, I see that the only successful experiment (58.75) was the original minimal gre
+
+  [Synthesizer] experiment #9
+    KEPT     score=60.0000  delta=+1.2500
+    change: Looking at the board, I see that the only successful experiment (58.75) was the original minimal gre
+============================================================
+ROUND 4/6  |  best = 60.0000
+============================================================
+
+  [Explorer] experiment #10
+    KEPT     score=63.7500  delta=+3.7500
+    change: Looking at the board, I see a critical pattern: the successful approaches (58.75 and 60.0) were both
+
+  [Optimizer] experiment #11
+    reverted score=52.5000  delta=-11.2500
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75) were all minimal changes
+
+  [Synthesizer] experiment #12
+    reverted score=52.5000  delta=-11.2500
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75) were all minimal changes
+============================================================
+ROUND 5/6  |  best = 63.7500
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=46.2500  delta=-17.5000
+    change: Looking at the board, I see the successful approaches (58.75, 60.0, 63.75) were all minimal changes 
+
+  [Optimizer] experiment #14
+    KEPT     score=65.0000  delta=+1.2500
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75) all kept the core greedy
+
+  [Synthesizer] experiment #15
+    KEPT     score=76.2500  delta=+11.2500
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75, 65.0) all kept the core 
+============================================================
+ROUND 6/6  |  best = 76.2500
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=62.5000  delta=-13.7500
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75, 65.0, 76.25) all kept th
+
+  [Optimizer] experiment #17
+    reverted score=76.2500  delta=+0.0000
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75, 65.0, 76.25) all kept th
+
+  [Synthesizer] experiment #18
+    reverted score=76.2500  delta=+0.0000
+    change: Looking at the board, I see the successful experiments (58.75, 60.0, 63.75, 65.0, 76.25) all kept th
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  76.2500
+  Improvement: +50.6300 (+197.6%)
+  Kept:        5/18
+  Board:       /tmp/ablation_game-ai_bt5_g9h0v200/game-ai/board.json
+  Tree nodes:  6
+  Backtracks:  0
+  Max depth:   6
+============================================================
+-> score=76.25 bt=0 (787.4s)
+[8/9] bt=5 | run 2 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt5_1v84ldup/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt5_1v84ldup/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt5_1v84ldup/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll start with a solid baseline that implements alpha-beta search with proper p
+
+  [Optimizer] experiment #2
+    KEPT     score=58.7500  delta=+33.1300
+    change: I'll make a minimal incremental change - starting with basic positional weights since the previous a
+
+  [Synthesizer] experiment #3
+    KEPT     score=83.1200  delta=+24.3700
+    change: Looking at the board, I see that a simple positional weights approach got 58.75%, while a full alpha
+============================================================
+ROUND 2/6  |  best = 83.1200
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=46.8800  delta=-36.2400
+    change: Looking at the board, I see that a simple positional weights approach got 58.75%, while my full alph
+
+  [Optimizer] experiment #5
+    reverted score=83.1200  delta=+0.0000
+    change: Looking at the board, I see that the Synthesizer achieved 83.12% by building on my 58.75% result
+
+  [Synthesizer] experiment #6
+    reverted score=81.2500  delta=-1.8700
+    change: Looking at the board, I see that the current best score is 83.12% achieved by keeping things relativ
+============================================================
+ROUND 3/6  |  best = 83.1200
+============================================================
+
+  [Explorer] experiment #7
+    CRASH  | Looking at the board, I see that complex alpha-beta search implementations have 
+
+  [Optimizer] experiment #8
+    KEPT     score=84.3800  delta=+1.2600
+    change: Looking at the board, I see that complex alpha-beta search implementations have consistently failed 
+
+  [Synthesizer] experiment #9
+    reverted score=56.8800  delta=-27.5000
+    change: Looking at the board, I see that the current best score is 84.38% achieved by keeping things simple 
+============================================================
+ROUND 4/6  |  best = 84.3800
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=72.5000  delta=-11.8800
+    change: Looking at the board, I see a clear pattern: complex alpha-beta search implementations have consiste
+
+  [Optimizer] experiment #11
+    reverted score=44.3800  delta=-40.0000
+    change: Looking at the board, I see that the current best score is 84.38% with a simple 1-ply lookahead appr
+
+  [Synthesizer] experiment #12
+    reverted score=56.2500  delta=-28.1300
+    change: Looking at the board, I see that complex alpha-beta implementations have consistently failed (0%, 46
+============================================================
+ROUND 5/6  |  best = 84.3800
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=71.2500  delta=-13.1300
+    change: Looking at the board, I see that the current best score is 84.38% with a simple 1-ply lookahead appr
+
+  [Optimizer] experiment #14
+    reverted score=58.1300  delta=-26.2500
+    change: Looking at the board, I see that the current best score is 84.38% achieved by keeping things simple 
+
+  [Synthesizer] experiment #15
+    reverted score=58.7500  delta=-25.6300
+    change: Looking at the board, I see the current best score is 84.38% with a simple 1-ply lookahead
+============================================================
+ROUND 6/6  |  best = 84.3800
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=79.3800  delta=-5.0000
+    change: Looking at the board, I see a clear pattern: complex alpha-beta search implementations have consiste
+
+  [Optimizer] experiment #17
+    reverted score=43.1200  delta=-41.2600
+    change: Looking at the board, I see that the current best score is 84.38% with a simple 1-ply lookahead appr
+
+  [Synthesizer] experiment #18
+    KEPT     score=87.5000  delta=+3.1200
+    change: Looking at the board, I see a clear pattern: complex alpha-beta implementations consistently fail (0
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  87.5000
+  Improvement: +61.8800 (+241.5%)
+  Kept:        4/18
+  Board:       /tmp/ablation_game-ai_bt5_1v84ldup/game-ai/board.json
+  Tree nodes:  5
+  Backtracks:  0
+  Max depth:   5
+============================================================
+-> score=87.50 bt=0 (1199.3s)
+[9/9] bt=5 | run 3 ... SwarmResearch Engine v0.6 [full-file, sequential]
+  Task:      /tmp/ablation_game-ai_bt5_k3mr1jb9/game-ai/task.md
+  Targets:   /tmp/ablation_game-ai_bt5_k3mr1jb9/game-ai/target/strategy.py, /tmp/ablation_game-ai_bt5_k3mr1jb9/game-ai/target/weights.py
+  Eval:      python3 eval.py
+  Direction: maximize
+  Rounds:    6
+  Eval runs: 1
+  Agents:    Explorer, Optimizer, Synthesizer
+
+Evaluating current state (1 runs)...
+Baseline: 25.6200
+
+============================================================
+ROUND 1/6  |  best = 25.6200
+============================================================
+
+  [Explorer] experiment #1
+    CRASH  | I'll implement a complete Othello AI with alpha-beta pruning, iterative deepenin
+
+  [Optimizer] experiment #2
+    KEPT     score=44.3800  delta=+18.7600
+    change: I'll start with a minimal, focused improvement: implementing a basic greedy strategy that maximizes 
+
+  [Synthesizer] experiment #3
+    KEPT     score=58.7500  delta=+14.3700
+    change: Looking at the board, I see that a simple greedy approach (maximizing flips) got us to 44.38 points,
+============================================================
+ROUND 2/6  |  best = 58.7500
+============================================================
+
+  [Explorer] experiment #4
+    reverted score=51.8800  delta=-6.8700
+    change: Looking at the board, I see that simple approaches are working (greedy got 44.38, then adding positi
+
+  [Optimizer] experiment #5
+    KEPT     score=61.8800  delta=+3.1300
+    change: Looking at the board, I see that a simple greedy approach (maximizing flips) got us to 44.38 points,
+
+  [Synthesizer] experiment #6
+    CRASH  | Looking at the board, I see that simple approaches are working well: greedy got 
+============================================================
+ROUND 3/6  |  best = 61.8800
+============================================================
+
+  [Explorer] experiment #7
+    CRASH  | Looking at the board, I see that simple hybrid approaches (greedy + position wei
+
+  [Optimizer] experiment #8
+    KEPT     score=68.7500  delta=+6.8700
+    change: Looking at the board, I see that simple hybrid approaches (greedy + position weights) are working be
+
+  [Synthesizer] experiment #9
+    reverted score=61.2500  delta=-7.5000
+    change: Looking at the board, I see that simple hybrid approaches (greedy + position weights + opponent mobi
+============================================================
+ROUND 4/6  |  best = 68.7500
+============================================================
+
+  [Explorer] experiment #10
+    reverted score=46.2500  delta=-22.5000
+    change: Looking at the board, I see that simple hybrid approaches have been progressively improving (44.38 →
+
+  [Optimizer] experiment #11
+    reverted score=63.1200  delta=-5.6300
+    change: Looking at the board, I see that simple hybrid approaches (greedy + position weights + opponent mobi
+
+  [Synthesizer] experiment #12
+    reverted score=60.6200  delta=-8.1300
+    change: Looking at the board, I see that simple hybrid approaches have been progressively improving (44.38 →
+============================================================
+ROUND 5/6  |  best = 68.7500
+============================================================
+
+  [Explorer] experiment #13
+    reverted score=56.8800  delta=-11.8700
+    change: Looking at the board, I see that complex search algorithms consistently fail (timeouts), while simpl
+
+  [Optimizer] experiment #14
+    KEPT     score=72.5000  delta=+3.7500
+    change: Looking at the board, I see that simple hybrid approaches have been working best, with the current b
+
+  [Synthesizer] experiment #15
+    KEPT     score=73.7500  delta=+1.2500
+    change: Looking at the board, I see that simple hybrid approaches have been progressively improving (44.38 →
+============================================================
+ROUND 6/6  |  best = 73.7500
+============================================================
+
+  [Explorer] experiment #16
+    reverted score=73.7500  delta=+0.0000
+    change: Looking at the board, I see that simple hybrid approaches have been progressively improving (44.38 →
+
+  [Optimizer] experiment #17
+    reverted score=72.5000  delta=-1.2500
+    change: Looking at the board, I see that simple hybrid approaches have been progressively improving (44.38 →
+
+  [Synthesizer] experiment #18
+    CRASH  | Looking at the board, I see that simple hybrid approaches have been progressivel
+
+============================================================
+DONE
+  Experiments: 18
+  Baseline:    25.6200
+  Final best:  73.7500
+  Improvement: +48.1300 (+187.9%)
+  Kept:        6/18
+  Board:       /tmp/ablation_game-ai_bt5_k3mr1jb9/game-ai/board.json
+  Tree nodes:  7
+  Backtracks:  0
+  Max depth:   7
+============================================================
+-> score=73.75 bt=0 (1323.7s)
+
+Done. 9 runs in 10265s
+Raw results: /root/projects/swarm-research/experiments/results/ablation_depth_raw.json
+
+## Combined backtrack depth table (game-ai):
+  (bt=0 and bt=3 from main ablation, bt=1,2,5 from this run)
+
+   bt |  n |    mean |    std | backtracks
+  --- | -- | ------- | ------ | ----------
+    0 |  3 |   74.17 |   0.72 | N/A
+    1 |  3 |   78.96 |   9.49 | up to 5
+    2 |  3 |   91.25 |   7.60 | up to 5
+    3 |  3 |   91.67 |  14.43 | up to 5
+    5 |  3 |   79.17 |   7.32 | up to 5
+
+Summary:     /root/projects/swarm-research/experiments/results/ablation_depth_summary.md
