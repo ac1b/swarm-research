@@ -1,11 +1,15 @@
 .env
 board.json
+tree.json
+agent_memory/
+report.md
 __pycache__/
 *.pyc
 *.egg-info/
 dist/
 build/
 .venv/
+.pytest_cache/
 *.swp
 .DS_Store
 *.db

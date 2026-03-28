@@ -10,7 +10,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/ac1b/swarm-research?style=flat-square&color=gold)](https://github.com/ac1b/swarm-research/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-green?style=flat-square)](https://python.org)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-green?style=flat-square)](https://python.org)
 [![Tests](https://img.shields.io/badge/Tests-88%20passed-brightgreen?style=flat-square)](#-tests)
 
 Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) and [MiroFish](https://github.com/666ghj/MiroFish).
@@ -252,7 +252,7 @@ python3 -m pytest tests/test_multifile.py  # multi-file target tests (33)
 
 ```
 swarm-research/
-├── engine.py              # Core engine (~1300 lines)
+├── engine.py              # Core engine (~1400 lines)
 ├── run.py                 # CLI entry point
 ├── .env.example           # LLM config template
 ├── docs/images/           # README images

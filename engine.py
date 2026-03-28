@@ -8,6 +8,7 @@ v0.6: multi-file targets, backtracking/tree search, resume, phase-aware promptin
 import json
 import os
 import re
+import signal
 import subprocess
 import shutil
 import threading
@@ -412,28 +413,42 @@ def parse_task(task_path):
 def run_eval_once(eval_cmd, work_dir, timeout=300):
     # type: (str, Path, int) -> Optional[float]
     try:
-        result = subprocess.run(
+        # Use process group so we can kill the entire tree on timeout
+        # (shell=True spawns a shell that may fork children — plain
+        #  subprocess.run(timeout=) only kills the shell, not children)
+        proc = subprocess.Popen(
             eval_cmd, shell=True, cwd=work_dir,
-            capture_output=True, text=True, timeout=timeout,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            preexec_fn=os.setsid,
         )
-        if result.returncode != 0:
-            stderr_tail = result.stderr[-500:] if result.stderr else ""
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # Kill the entire process group
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            proc.wait()
+            print(f"    eval TIMEOUT ({timeout}s)")
+            return None
+
+        if proc.returncode != 0:
+            stderr_tail = stderr[-500:] if stderr else ""
             print(f"    eval error: {stderr_tail}")
             return None
 
         # Prefer explicit SCORE: marker, fallback to last number in output
-        for line in reversed(result.stdout.strip().split("\n")):
+        for line in reversed(stdout.strip().split("\n")):
             score_match = re.search(r"SCORE:\s*([-+]?\d*\.?\d+)", line.strip())
             if score_match:
                 return float(score_match.group(1))
 
-        for line in reversed(result.stdout.strip().split("\n")):
+        for line in reversed(stdout.strip().split("\n")):
             match = re.search(r"[-+]?\d*\.?\d+", line.strip())
             if match:
                 return float(match.group())
 
         return None
-    except subprocess.TimeoutExpired:
+    except Exception as e:
+        print(f"    eval exception: {e}")
         return None
 
 
