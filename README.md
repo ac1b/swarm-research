@@ -19,6 +19,13 @@ Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) 
 
 ---
 
+<div align="center">
+<img src="docs/images/demo.gif" alt="SwarmResearch demo" width="800">
+<br><sub>Game-AI example: Othello bot 25% → 100% win rate in 6 rounds with backtracking</sub>
+</div>
+
+---
+
 ## ⚡ What is this?
 
 Most auto-research tools use a **greedy ratchet** — keep improvements, revert everything else. This gets stuck in local optima fast.
