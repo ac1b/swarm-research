@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present **SwarmResearch**, a framework for automated code optimization that combines multiple LLM agents with tree search and a shared memory board. Given a target program and a numeric evaluation function, SwarmResearch iteratively generates code modifications through diverse agents---each with a distinct optimization strategy and sampling temperature---that share findings via a persistent board. When optimization stalls, a backtracking mechanism restores promising earlier states and redirects search to unexplored regions of the solution space. Across four benchmarks (game AI, bioinformatics, job scheduling, and TSP), the full system achieves up to +282% improvement over baselines. Ablations over 100 runs show that multi-agent diversity contributes up to 2.8x larger gains than single-agent search, and tree-based backtracking adds +27% relative improvement on complex tasks. Parallel execution provides 2.6x wall-clock speedup with no quality loss.
+We present **SwarmResearch**, a framework for automated code optimization that combines multiple LLM agents with tree search and a shared memory board. Given a target program and a numeric evaluation function, SwarmResearch iteratively generates code modifications through diverse agents---each with a distinct optimization strategy and sampling temperature---that share findings via a persistent board. When optimization stalls, a backtracking mechanism restores promising earlier states and redirects search to unexplored regions of the solution space. Across four benchmarks (game AI, bioinformatics, job scheduling, and TSP), the full system achieves up to +282% improvement over baselines. Ablations over 100 runs show that multi-agent diversity contributes up to 2.8x larger gains than single-agent search, and tree-based backtracking enables perfect scores in 57% of runs versus 0% without it on the hardest benchmark (Cohen's d=0.53). Parallel execution provides 2.6x wall-clock speedup with no quality loss.
 
 ---
 
@@ -126,9 +126,9 @@ We compare **Full** (3 agents + backtracking), **No-Backtrack** (3 agents, k=0),
 
 *Figure 2: Component ablation on Game-AI and Bio-Opt. Full system (blue) consistently outperforms No-Backtrack (orange) and Single-Agent (red). Dashed lines show baselines. Error bars: +/- 1 std.*
 
-**Multi-agent diversity.** Across all tasks, multi-agent configs outperform Single-Agent. The effect is strongest on Bio-Opt: Full achieves +26% vs. Single-Agent's +9%---a 2.8x larger gain. On Scheduler, multi-agent configs reduce tardiness by ~60% vs. 53%. On Game-AI, Full reaches 100% win rate in 4/7 runs vs. 1/7 for both alternatives.
+**Multi-agent diversity.** Across all tasks, multi-agent configs outperform Single-Agent. The effect is strongest on Bio-Opt: Full achieves +26% vs. Single-Agent's +9%---a 2.8x larger gain. On Scheduler, multi-agent configs reduce tardiness by ~60% vs. 53%. On Game-AI, Full reaches 100% win rate in 4/7 runs vs. 0/7 for both alternatives.
 
-**Backtracking.** On Game-AI, Full outperforms No-Backtrack by +27% relative (87.5 vs. 80.5; Cohen's d=0.53). On Bio-Opt, the gap is +12% relative. On Scheduler and TSP, backtracking adds minimal benefit---these tasks either have smooth landscapes (TSP) or high variance that masks the signal (Scheduler).
+**Backtracking.** On Game-AI, Full outperforms No-Backtrack by +9% relative (87.5 vs. 80.5; Cohen's d=0.53), and crucially reaches perfect scores in 4/7 runs vs. 0/7 without backtracking. On Bio-Opt, the gap is +10% relative (49.9 vs. 45.3). On Scheduler and TSP, backtracking adds minimal benefit---these tasks either have smooth landscapes (TSP) or high variance that masks the signal (Scheduler).
 
 ### 4.3 Backtrack Threshold and Round Scaling
 
