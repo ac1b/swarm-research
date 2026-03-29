@@ -242,8 +242,6 @@ AGENTS = [
 | **Anthropic** (Claude) | `LLM_PROVIDER=anthropic` |
 | **OpenAI** (GPT-4o) | `LLM_PROVIDER=openai` |
 | **Kimi Code** (K2.5) | `LLM_PROVIDER=anthropic`, `LLM_BASE_URL=https://api.kimi.com/coding/` |
-| **Kimi API** (moonshot) | `LLM_PROVIDER=openai`, `LLM_BASE_URL=https://api.moonshot.ai/v1` |
-| **MiniMax** | `LLM_PROVIDER=openai`, `LLM_BASE_URL=https://api.minimax.io/v1` |
 | **Any OpenAI-compatible** | `LLM_PROVIDER=openai`, set `LLM_BASE_URL` |
 
 ## 🧪 Tests
@@ -262,29 +260,35 @@ swarm-research/
 ├── engine.py              # Core engine (~1400 lines)
 ├── run.py                 # CLI entry point
 ├── .env.example           # LLM config template
-├── docs/images/           # README images
+├── docs/images/           # README images + demo GIF
 ├── tests/
 │   ├── test_tree.py       # SearchTree unit tests
 │   ├── test_backtrack_engine.py
 │   ├── test_multifile.py  # Multi-file target tests
 │   └── conftest.py
-└── examples/
-    ├── speed-opt/         # Python function speed optimization
-    ├── tsp-opt/           # 40-city TSP (3 files: solver + moves + config)
-    ├── multi-opt/         # Multi-file sorting (algorithm + config)
-    ├── algo-opt/          # Bin packing algorithm optimization
-    ├── config-opt/        # Cache configuration tuning
-    ├── compress-opt/      # Compression algorithm from scratch
-    ├── bio-opt/           # DNA motif discovery (bioinformatics)
-    ├── num-opt/           # Numerical integration accuracy
-    ├── game-ai/           # Othello AI vs 4 opponents (strategy + weights)
-    ├── ml-opt/            # Neural net from scratch, no libraries (model + train)
-    └── scheduler/         # Job shop scheduling, NP-hard (scheduler + heuristics + config)
+├── examples/              # 11 benchmark tasks
+│   ├── speed-opt/         # Python function speed optimization
+│   ├── tsp-opt/           # 40-city TSP (3 files)
+│   ├── multi-opt/         # Multi-file sorting
+│   ├── algo-opt/          # Bin packing optimization
+│   ├── config-opt/        # Cache configuration tuning
+│   ├── compress-opt/      # Compression from scratch
+│   ├── bio-opt/           # DNA motif discovery
+│   ├── num-opt/           # Numerical integration
+│   ├── game-ai/           # Othello AI vs 4 opponents (2 files)
+│   ├── ml-opt/            # Neural net from scratch (2 files)
+│   └── scheduler/         # NP-hard job shop scheduling (3 files)
+├── experiments/           # Ablation scripts + results (100 runs)
+└── paper/                 # NeurIPS workshop paper draft
 ```
 
 ## 🔮 Roadmap
 
 - [x] Multi-file targets — optimize across multiple files simultaneously
+- [x] Tree search with backtracking — escape local optima
+- [x] Parallel agent execution — 2.6x speedup
+- [x] 11 benchmark examples with baselines
+- [x] Ablation study — 100 runs across 4 benchmarks
 - [ ] Agent evolution — bad strategies die, good ones mutate and reproduce
 - [ ] Smart scheduling — board influences which agent goes next
 
