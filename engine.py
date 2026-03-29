@@ -702,6 +702,9 @@ def apply_diffs(originals, response):
         replace = replace.rstrip("\n")
         content = result[filepath]
 
+        if not search:
+            continue  # skip empty SEARCH blocks
+
         if search in content:
             result[filepath] = content.replace(search, replace, 1)
         else:
@@ -758,12 +761,14 @@ def extract_file_contents(originals, response):
     file_blocks = re.findall(r"```file:(\S+)\s*\n(.*?)```", cleaned, re.DOTALL)
     if file_blocks:
         result = dict(originals)
+        matched = False
         for path, content in file_blocks:
             if path in result:
                 result[path] = content
-        if all(result[k] == originals[k] for k in originals):
-            return None
-        return result
+                matched = True
+        if matched and not all(result[k] == originals[k] for k in originals):
+            return result
+        # Fall through to single-file fallback if no paths matched
 
     # Single-file fallback
     if len(keys) == 1:
@@ -798,13 +803,17 @@ def extract_change_summary(reasoning):
 # ---------------------------------------------------------------------------
 
 def git(work_dir, *args):
-    return subprocess.run(
-        ["git"] + list(args), cwd=work_dir, capture_output=True, text=True,
-    )
+    try:
+        return subprocess.run(
+            ["git"] + list(args), cwd=work_dir, capture_output=True, text=True,
+        )
+    except FileNotFoundError:
+        return None  # git not installed
 
 def _ensure_gitignore(work_dir):
     gitignore = work_dir / ".gitignore"
-    needed = {"board.json", "agent_memory/", "report.md", "tree.json"}
+    needed = {"board.json", "agent_memory/", "report.md", "tree.json",
+               "__pycache__/", "*.pyc"}
     if gitignore.exists():
         existing = set(gitignore.read_text().splitlines())
         missing = needed - existing
@@ -831,7 +840,7 @@ def git_commit(work_dir, message):
 # ---------------------------------------------------------------------------
 
 _EVAL_COPY_EXCLUDE = {
-    ".git", "board.json", "agent_memory", "tree.json",
+    ".git", "board.json", "agent_memory", "tree.json", "report.md",
     "__pycache__", ".venv", "venv", "node_modules", ".mypy_cache",
     ".pytest_cache", ".ruff_cache",
 }
@@ -1179,11 +1188,13 @@ class SwarmEngine:
                 self.tree._save()
                 current_hash = SearchTree._content_hash(current_contents)
                 active_node = self.tree.nodes.get(self.tree.active_node_id)
-                if active_node and active_node.content_hash != current_hash:
-                    print(f"  Tree hash mismatch, rebuilding tree.")
+                if not active_node or active_node.content_hash != current_hash:
+                    reason = "missing active node" if not active_node else "hash mismatch"
+                    print(f"  Tree {reason}, rebuilding tree.")
                     tree_path.unlink()
                     self.tree = SearchTree(tree_path)
                     self.tree.create_root(self.best_score, current_contents)
+                    self.backtrack_count = 0
                 else:
                     print(f"  Resumed tree: {len(self.tree.nodes)} nodes, "
                           f"{self.backtrack_count} backtracks")

@@ -113,6 +113,34 @@ class TestApplyDiffsMultiFile:
         assert result["first.py"] == "a = 99\n"
         assert result["second.py"] == "b = 2\n"
 
+    def test_empty_search_block_skipped(self):
+        """Empty SEARCH block should be skipped, not prepend text."""
+        originals = {"main.py": "x = 1\n"}
+        response = (
+            "<<<< SEARCH\n\n====\nbogus\n>>>> REPLACE\n"
+        )
+        result = apply_diffs(originals, response)
+        # Should return None (no valid diffs applied)
+        assert result is None
+
+    def test_extract_fallback_on_wrong_file_label(self):
+        """Single-file target: wrong ```file:label should fall through to plain extraction."""
+        originals = {"main.py": "x = 1\n"}
+        response = "Here is the code:\n\n```python\nx = 42\n```"
+        # No ```file: blocks → goes straight to single-file fallback
+        result = extract_file_contents(originals, response)
+        assert result is not None
+        assert result["main.py"] == "x = 42\n"
+
+    def test_extract_wrong_file_label_falls_through(self):
+        """```file:wrong_name with no matching target should not block fallback."""
+        originals = {"main.py": "x = 1\n"}
+        # file_blocks found but no match → should fall through
+        response = "Changed:\n```file:wrong.py\nx = 99\n```"
+        result = extract_file_contents(originals, response)
+        # No match and no plain blocks → None is expected
+        assert result is None
+
 
 # ---------------------------------------------------------------------------
 # extract_file_contents: multi-file
