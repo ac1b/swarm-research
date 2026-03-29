@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present **SwarmOpt**, a framework for automated code optimization that combines multiple LLM agents with tree search and a shared memory board. Given a target program and a numeric evaluation function, SwarmOpt iteratively generates code modifications through diverse agents---each with a distinct optimization strategy and sampling temperature---that share findings via a persistent board. When optimization stalls, a backtracking mechanism restores promising earlier states and redirects search to unexplored regions of the solution space. Across four benchmarks (game AI, bioinformatics, job scheduling, and TSP), the full system achieves up to +282% improvement over baselines. Ablations over 100 runs show that multi-agent diversity contributes up to 2.8x larger gains than single-agent search, and tree-based backtracking adds +27% relative improvement on complex tasks. Parallel execution provides 2.6x wall-clock speedup with no quality loss.
+We present **SwarmResearch**, a framework for automated code optimization that combines multiple LLM agents with tree search and a shared memory board. Given a target program and a numeric evaluation function, SwarmResearch iteratively generates code modifications through diverse agents---each with a distinct optimization strategy and sampling temperature---that share findings via a persistent board. When optimization stalls, a backtracking mechanism restores promising earlier states and redirects search to unexplored regions of the solution space. Across four benchmarks (game AI, bioinformatics, job scheduling, and TSP), the full system achieves up to +282% improvement over baselines. Ablations over 100 runs show that multi-agent diversity contributes up to 2.8x larger gains than single-agent search, and tree-based backtracking adds +27% relative improvement on complex tasks. Parallel execution provides 2.6x wall-clock speedup with no quality loss.
 
 ---
 
@@ -16,7 +16,7 @@ We identify three limitations of single-agent iterative optimization:
 2. **No recovery from dead ends**---once a promising direction stalls, there is no mechanism to backtrack.
 3. **No knowledge transfer**---failed attempts are discarded rather than informing future exploration.
 
-SwarmOpt addresses these limitations through three mechanisms:
+SwarmResearch addresses these limitations through three mechanisms:
 
 - **Agent diversity.** Multiple agents with distinct strategies and sampling temperatures reduce strategy collapse.
 - **Shared memory board.** A persistent board records all experiments, enabling cross-agent knowledge transfer and failure avoidance.
@@ -28,9 +28,9 @@ We evaluate on four diverse benchmarks and conduct systematic ablations (100 run
 
 ## 2. Related Work
 
-**LLM-based code optimization.** FunSearch [2] evolves mathematical programs via LLMs, maintaining a population of solutions ranked by fitness. AlphaCode [1] generates massive candidate pools and filters via execution. EvoPrompting [4] combines evolutionary search with LLM mutation for neural architecture search. These approaches use flat populations; SwarmOpt maintains a *structured search tree* enabling targeted backtracking to promising states.
+**LLM-based code optimization.** FunSearch [2] evolves mathematical programs via LLMs, maintaining a population of solutions ranked by fitness. AlphaCode [1] generates massive candidate pools and filters via execution. EvoPrompting [4] combines evolutionary search with LLM mutation for neural architecture search. These approaches use flat populations; SwarmResearch maintains a *structured search tree* enabling targeted backtracking to promising states.
 
-**Multi-agent LLM systems.** ChatDev [5] and MetaGPT [6] assign specialized roles in software development pipelines. Multi-agent debate [7] improves reasoning through discussion. AgentCoder [8] separates generation from testing. These systems optimize for *correctness* through role specialization; SwarmOpt optimizes a *numeric objective* with strategy-diverse agents sharing results through a common board.
+**Multi-agent LLM systems.** ChatDev [5] and MetaGPT [6] assign specialized roles in software development pipelines. Multi-agent debate [7] improves reasoning through discussion. AgentCoder [8] separates generation from testing. These systems optimize for *correctness* through role specialization; SwarmResearch optimizes a *numeric objective* with strategy-diverse agents sharing results through a common board.
 
 **Search and self-refinement.** Tree of Thoughts [9] applies tree search to LLM reasoning at the thought-step level. Reflexion [10] uses verbal self-reflection; Self-Refine [3] iterates generation and critique. Large Language Monkeys [11] scales inference via repeated sampling. Our tree search operates at the *program state* level, with backtracking restoring actual file contents rather than reasoning steps.
 
@@ -179,7 +179,7 @@ Sequential and parallel modes achieve identical quality on Game-AI (81.7 +/- 6.9
 
 ## 6. Conclusion
 
-SwarmOpt combines multi-agent diversity, shared memory, and tree-based backtracking for LLM-driven code optimization. Across four benchmarks, it achieves up to +282% improvement, with ablations confirming that each component contributes meaningfully on complex tasks. The framework is task-agnostic---any program with a numeric evaluation function can be optimized---and supports both sequential and parallel execution.
+SwarmResearch combines multi-agent diversity, shared memory, and tree-based backtracking for LLM-driven code optimization. Across four benchmarks, it achieves up to +282% improvement, with ablations confirming that each component contributes meaningfully on complex tasks. The framework is task-agnostic---any program with a numeric evaluation function can be optimized---and supports both sequential and parallel execution.
 
 ---
 

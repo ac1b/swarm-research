@@ -35,8 +35,8 @@
 \maketitle
 
 \begin{abstract}
-We present \textsc{SwarmOpt}, a framework for automated code optimization that combines multiple LLM agents with tree search and a shared memory board.
-Given a target program and a numeric evaluation function, \textsc{SwarmOpt} iteratively generates code modifications through diverse agents---each with a distinct optimization strategy and sampling temperature---that share findings via a persistent board.
+We present \textsc{SwarmResearch}, a framework for automated code optimization that combines multiple LLM agents with tree search and a shared memory board.
+Given a target program and a numeric evaluation function, \textsc{SwarmResearch} iteratively generates code modifications through diverse agents---each with a distinct optimization strategy and sampling temperature---that share findings via a persistent board.
 When optimization stalls, a backtracking mechanism restores promising earlier states and redirects search to unexplored regions of the solution space.
 Across four benchmarks (game AI, bioinformatics, job scheduling, and TSP), the full system achieves up to $+282\%$ improvement over baselines.
 Ablations over 100 runs show that multi-agent diversity contributes up to $2.8\times$ larger gains than single-agent search, and tree-based backtracking adds $+27\%$ relative improvement on complex tasks.
@@ -56,7 +56,7 @@ We identify three limitations of single-agent iterative optimization:
 (2)~\textbf{No recovery from dead ends}---once a promising direction stalls, there is no mechanism to backtrack;
 (3)~\textbf{No knowledge transfer}---failed attempts are discarded rather than informing future exploration.
 
-\textsc{SwarmOpt} addresses these limitations through three mechanisms:
+\textsc{SwarmResearch} addresses these limitations through three mechanisms:
 \begin{itemize}[nosep,leftmargin=1.2em]
 \item \textbf{Agent diversity.} Multiple agents with distinct strategies and sampling temperatures reduce strategy collapse.
 \item \textbf{Shared memory board.} A persistent board records all experiments, enabling cross-agent knowledge transfer and failure avoidance.
@@ -74,13 +74,13 @@ We evaluate on four diverse benchmarks and conduct systematic ablations (100 run
 FunSearch~\cite{romera2024funsearch} evolves mathematical programs via LLMs, maintaining a population of solutions ranked by fitness.
 AlphaCode~\cite{li2023alphacode2} generates massive candidate pools and filters via execution.
 EvoPrompting~\cite{chen2023evoprompting} combines evolutionary search with LLM mutation for neural architecture search.
-These approaches use flat populations; \textsc{SwarmOpt} maintains a \emph{structured search tree} enabling targeted backtracking to promising states.
+These approaches use flat populations; \textsc{SwarmResearch} maintains a \emph{structured search tree} enabling targeted backtracking to promising states.
 
 \paragraph{Multi-agent LLM systems.}
 ChatDev~\cite{qian2024chatdev} and MetaGPT~\cite{hong2024metagpt} assign specialized roles in software development pipelines.
 Multi-agent debate~\cite{du2023improving} improves reasoning through discussion.
 AgentCoder~\cite{huang2024agentcoder} separates generation from testing.
-These systems optimize for \emph{correctness} through role specialization; \textsc{SwarmOpt} optimizes a \emph{numeric objective} with strategy-diverse agents sharing results through a common board.
+These systems optimize for \emph{correctness} through role specialization; \textsc{SwarmResearch} optimizes a \emph{numeric objective} with strategy-diverse agents sharing results through a common board.
 
 \paragraph{Search and self-refinement.}
 Tree of Thoughts~\cite{yao2023tree} applies tree search to LLM reasoning at the thought-step level.
@@ -249,7 +249,7 @@ We use a single LLM (Kimi K2.5); results may differ with other models. Sample si
 \label{sec:conclusion}
 %--------------------------------------------------
 
-\textsc{SwarmOpt} combines multi-agent diversity, shared memory, and tree-based backtracking for LLM-driven code optimization. Across four benchmarks, it achieves up to $+282\%$ improvement, with ablations confirming that each component contributes meaningfully on complex tasks. The framework is task-agnostic---any program with a numeric evaluation function can be optimized---and supports both sequential and parallel execution. Code and benchmarks are publicly available.\footnote{Repository URL withheld for anonymous review.}
+\textsc{SwarmResearch} combines multi-agent diversity, shared memory, and tree-based backtracking for LLM-driven code optimization. Across four benchmarks, it achieves up to $+282\%$ improvement, with ablations confirming that each component contributes meaningfully on complex tasks. The framework is task-agnostic---any program with a numeric evaluation function can be optimized---and supports both sequential and parallel execution. Code and benchmarks are publicly available.\footnote{Repository URL withheld for anonymous review.}
 
 \bibliographystyle{plain}
 \bibliography{references}
