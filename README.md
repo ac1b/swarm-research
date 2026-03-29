@@ -11,7 +11,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/ac1b/swarm-research?style=flat-square&color=gold)](https://github.com/ac1b/swarm-research/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-green?style=flat-square)](https://python.org)
-[![Tests](https://img.shields.io/badge/Tests-88%20passed-brightgreen?style=flat-square)](#-tests)
+[![Tests](https://img.shields.io/badge/Tests-90%20passed-brightgreen?style=flat-square)](#-tests)
 
 Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) and [MiroFish](https://github.com/666ghj/MiroFish).
 
@@ -247,8 +247,8 @@ AGENTS = [
 ## 🧪 Tests
 
 ```bash
-python3 -m pytest tests/ -v          # all 88 tests
-python3 -m pytest tests/test_tree.py  # SearchTree unit tests (33)
+python3 -m pytest tests/ -v          # all 90 tests
+python3 -m pytest tests/test_tree.py  # SearchTree unit tests (35)
 python3 -m pytest tests/test_backtrack_engine.py  # engine integration (22)
 python3 -m pytest tests/test_multifile.py  # multi-file target tests (33)
 ```
