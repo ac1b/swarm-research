@@ -3,7 +3,7 @@
 Simulates a cache with configurable eviction policy and measures hit rate
 across multiple workload patterns.
 """
-import importlib, math, random, sys
+import importlib, random, sys
 
 sys.path.insert(0, "target")
 if "config" in sys.modules:

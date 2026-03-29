@@ -2,7 +2,6 @@
 import importlib.util
 import random
 import sys
-import os
 import time
 
 # ── Othello Engine ─────────────────────────────────────────────────────
@@ -218,7 +217,7 @@ def evaluate():
         ("Random", random_player),
         ("Greedy", greedy_player),
         ("Positional", positional_player),
-        ("Minimax-3", minimax_player),
+        ("Minimax-2", minimax_player),
     ]
 
     games_per_opponent = 20  # 10 as black, 10 as white

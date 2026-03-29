@@ -16,14 +16,14 @@ import shutil
 import sys
 import tempfile
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from pathlib import Path
 from statistics import mean, stdev
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from engine import SwarmEngine, AgentConfig, DEFAULT_AGENTS
+from engine import SwarmEngine, DEFAULT_AGENTS
 
 # ── Experiment definitions ──────────────────────────────────────────────────
 

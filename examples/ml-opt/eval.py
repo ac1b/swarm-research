@@ -4,7 +4,6 @@ import importlib.util
 import math
 import random
 import sys
-import os
 
 # ── Banned import check ───────────────────────────────────────────────
 

@@ -22,7 +22,7 @@ flexible job shop scheduling problem.
 - **Minimize**: sum of weight_i * max(0, completion_i - due_i) for all jobs
 
 ## Interface
-`schedule(jobs, machines, n_machines)` in `scheduler.py`:
+`schedule(jobs, n_machines)` in `scheduler.py`:
 - `jobs`: list of dicts with keys:
   - `id`: int
   - `release`: int (earliest start time)
@@ -31,7 +31,7 @@ flexible job shop scheduling problem.
   - `ops`: list of dicts, each with:
     - `eligible`: list of machine indices
     - `duration`: dict {machine_idx: processing_time}
-- `machines`: number of machines
+- `n_machines`: number of machines
 - Returns: list of `(job_id, op_index, machine, start_time)` tuples
 
 ## Scoring
@@ -51,4 +51,4 @@ Invalid schedules (constraint violations) get penalty = 100000 per instance.
 - Machine assignment optimization
 - Bottleneck-based scheduling
 
-Baseline (FIFO): ~5000-15000. Good heuristics: <1000.
+Baseline (FIFO): ~214,000. Good heuristics: <70,000.

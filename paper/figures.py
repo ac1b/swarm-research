@@ -4,7 +4,6 @@
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 from pathlib import Path
 
 OUT = Path(__file__).parent / "fig"
@@ -29,7 +28,6 @@ COLORS = {
     "full": "#2563EB",
     "no_backtrack": "#F59E0B",
     "single_agent": "#EF4444",
-    "no_board": "#8B5CF6",
 }
 
 

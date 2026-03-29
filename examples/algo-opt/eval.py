@@ -3,7 +3,7 @@
 Lower bound = ceil(sum(items) / capacity). Perfect packing = 100.
 Deterministic test cases with fixed seed.
 """
-import importlib, math, random, sys, time
+import importlib, math, random, sys
 
 sys.path.insert(0, "target")
 if "packer" in sys.modules:

@@ -2,7 +2,6 @@
 import importlib.util
 import random
 import sys
-import os
 
 
 def generate_instance(seed, n_jobs, n_machines, n_ops_range, time_range,

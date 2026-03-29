@@ -65,15 +65,15 @@ def main():
         mod = load_solution()
     except Exception as e:
         print(f"Import error: {e}", file=sys.stderr)
-        print("0.0")
+        print("SCORE: 0.0", flush=True)
         return
 
     if not check_correctness(mod):
-        print("0.0")
+        print("SCORE: 0.0", flush=True)
         return
 
     score = benchmark(mod)
-    print(f"{score:.4f}")
+    print(f"SCORE: {score:.4f}", flush=True)
 
 
 if __name__ == "__main__":

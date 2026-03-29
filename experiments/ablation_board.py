@@ -12,7 +12,6 @@ import tempfile
 import time
 from dataclasses import asdict
 from pathlib import Path
-from statistics import mean, stdev
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))

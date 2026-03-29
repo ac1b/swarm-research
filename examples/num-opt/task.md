@@ -20,7 +20,7 @@ Optimize the numerical integration algorithm for maximum accuracy.
 - Python stdlib only (math module OK), no numpy/scipy
 - Must handle diverse function shapes
 
-**Scoring:** avg(correct_digits) * 10. Left Riemann sum ~ 15-20. Perfect (14 digits) = 140.
+**Scoring:** avg(correct_digits) * 10. Left Riemann sum ~ 49. Perfect (14 digits) = 140.
 
 **Approaches to explore:** Midpoint rule, trapezoidal rule, Simpson's rule,
 Gaussian quadrature (Gauss-Legendre), adaptive subdivision, Romberg integration.

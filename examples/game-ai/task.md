@@ -27,7 +27,7 @@ of increasing strength.
 - `color`: your color (1 or 2)
 - `legal_moves`: list of (row, col) tuples — guaranteed non-empty
 - Returns: `(row, col)` — must be in `legal_moves`
-- Time limit: 0.09s per move (hard kill at 0.1s)
+- Game timeout: 15s total (keep per-move time reasonable)
 
 ## Opponents
 1. **Random** — picks uniformly from legal moves
