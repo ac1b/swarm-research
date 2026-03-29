@@ -117,7 +117,7 @@ We compare **Full** (3 agents + backtracking), **No-Backtrack** (3 agents, k=0),
 | | No-Backtrack | 213,837 | **84,963 +/- 24,849** | -60% |
 | | Single-Agent | 213,837 | 100,225 +/- 27,762 | -53% |
 | **TSP** | Full | 592.7 | **494.8 +/- 2.5** | -17% |
-| | No-Backtrack | 592.7 | 497.6 +/- 4.5 | -16% |
+| | No-Backtrack | 592.7 | 497.5 +/- 4.5 | -16% |
 | | Single-Agent | 592.7 | 495.6 +/- 0.5 | -16% |
 
 *Table 1: Component ablation. Best mean per task in bold. Game-AI and Scheduler: n=7; Bio-Opt and TSP: n=3.*

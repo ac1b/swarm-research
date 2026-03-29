@@ -4,7 +4,7 @@ import random
 
 
 class NeuralNet:
-    """Simple 2-layer network. Baseline ~60% on spiral — room to improve."""
+    """Simple 2-layer network. Baseline ~65% on spiral — room to improve."""
 
     def __init__(self, config):
         self.lr = config.get("learning_rate", 0.01)

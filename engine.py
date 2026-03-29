@@ -201,7 +201,7 @@ class SearchTree:
             lines.append(f"  {path_str} [abandoned at score={n.score:.4f}]")
         return "\n".join(lines)
 
-    def select_backtrack_target(self, current_id):
+    def select_backtrack_target(self, current_id, minimize=False):
         """Select best node to backtrack to. Returns node_id or None."""
         current_path = set(self.get_path_to_root(current_id))
 
@@ -211,7 +211,8 @@ class SearchTree:
             if node.id in current_path:
                 continue
             penalty = 0.3 if node.abandoned else 1.0
-            node_score = node.score * (1 / (1 + node.visits)) * penalty
+            raw = 1.0 / (node.score + 1) if minimize else node.score
+            node_score = raw * (1 / (1 + node.visits)) * penalty
             candidates.append((node.id, node_score))
 
         if candidates:
@@ -525,7 +526,7 @@ def call_llm(messages, temperature, max_tokens=16000):
 
 
 # ---------------------------------------------------------------------------
-# Prompt construction — v0.3: supports both full-file and diff mode
+# Prompt construction
 # ---------------------------------------------------------------------------
 
 DIFF_SYSTEM_TEMPLATE = """You are {agent_name}, an AI research agent in a swarm optimization team.
@@ -658,7 +659,7 @@ def build_prompt(agent, task_desc, target_contents, board, memory_text,
 
 
 # ---------------------------------------------------------------------------
-# Response parsing — v0.3: supports both diff and full-file responses
+# Response parsing
 # ---------------------------------------------------------------------------
 
 def strip_think_tags(text):
@@ -826,7 +827,7 @@ def git_commit(work_dir, message):
 
 
 # ---------------------------------------------------------------------------
-# SwarmEngine v0.3 — parallel agents, diff mode, smart exploration
+# SwarmEngine
 # ---------------------------------------------------------------------------
 
 _EVAL_COPY_EXCLUDE = {
@@ -856,12 +857,12 @@ class SwarmEngine:
         self.timeout = int(self.task.get("timeout", "300"))
         self.eval_runs = int(self.task.get("eval_runs", "1"))
 
-        # v0.3: diff mode for files > 50 lines
+        # diff mode for files > 50 lines
         mode = self.task.get("mode", "auto")
         total_lines = sum(f.read_text().count("\n") for f in self.target_files if f.exists())
         self.use_diff = mode == "diff" or (mode == "auto" and total_lines > 50)
 
-        # v0.3: parallel mode
+        # parallel mode
         self.parallel = self.task.get("parallel", "false").lower() == "true"
 
         self.board = Board(self.work_dir / "board.json")
@@ -878,8 +879,9 @@ class SwarmEngine:
         self.experiment_count = 0
         self.stale_rounds = 0  # consecutive rounds without improvement
         self.early_stop = int(self.task.get("early_stop", "0"))  # 0 = disabled
+        self.disable_board = False
 
-        # v0.5: backtracking / tree search
+        # backtracking / tree search
         self.backtrack = int(self.task.get("backtrack", "0"))
         self.max_backtracks = int(self.task.get("max_backtracks", "5"))
         self.backtrack_count = 0
@@ -945,7 +947,7 @@ class SwarmEngine:
             exp_num, self.use_diff,
             phase_hint=self._phase_hint(round_num),
             backtrack_context=self._backtrack_context(),
-            disable_board=getattr(self, "disable_board", False),
+            disable_board=self.disable_board,
         )
 
         # Call LLM
@@ -1062,7 +1064,7 @@ class SwarmEngine:
         import tempfile
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
-            # Copy work_dir contents (excluding .git)
+            # Copy work_dir contents (excluding build artifacts)
             for item in self.work_dir.iterdir():
                 if item.name in _EVAL_COPY_EXCLUDE:
                     continue
@@ -1070,7 +1072,7 @@ class SwarmEngine:
                 if item.is_dir():
                     shutil.copytree(item, dest,
                                     ignore=shutil.ignore_patterns(
-                                        "__pycache__", ".git", "node_modules",
+                                        "__pycache__", "node_modules",
                                         ".venv", "venv"))
                 else:
                     shutil.copy2(item, dest)
@@ -1304,7 +1306,8 @@ class SwarmEngine:
             return False
 
         current_id = self.tree.active_node_id
-        target_id = self.tree.select_backtrack_target(current_id)
+        target_id = self.tree.select_backtrack_target(
+            current_id, minimize=(self.direction == "minimize"))
         if target_id is None:
             print(f"\n  Backtrack: no viable targets (search exhausted).")
             return False

@@ -14,7 +14,7 @@ POSITION_WEIGHTS = [
 
 # Search parameters
 MAX_DEPTH = 1
-TIME_LIMIT = 0.08  # seconds per move (hard limit is 0.1s)
+TIME_LIMIT = 0.08  # seconds per move (game timeout is 15s total)
 
 # Evaluation component weights
 PIECE_COUNT_WEIGHT = 1.0
