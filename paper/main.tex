@@ -254,4 +254,163 @@ We use a single LLM (Kimi K2.5); results may differ with other models. Sample si
 \bibliographystyle{plain}
 \bibliography{references}
 
+\newpage
+\appendix
+\section{Per-Run Results}
+\label{app:per_run}
+
+We report individual run scores for all configurations to enable full reproducibility assessment.
+
+\subsection{Game-AI ($n{=}7$)}
+
+\begin{table}[h]
+\centering
+\caption{Game-AI per-run scores (win rate \%, maximize). Baseline: 25.6\%.}
+\label{tab:gameai_runs}
+\small
+\begin{tabular}{@{}lccccccc|cc@{}}
+\toprule
+\textbf{Config} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{R4} & \textbf{R5} & \textbf{R6} & \textbf{R7} & \textbf{Mean} & \textbf{Std} \\
+\midrule
+Full          & 62.5  & 75.0  & 75.0  & 100.0 & 100.0 & 100.0 & 100.0 & 87.5  & 16.1 \\
+No-Backtrack  & 73.8  & 73.8  & 73.8  & 75.0  & 83.1  & 85.6  & 98.8  & 80.5  & 9.4  \\
+Single-Agent  & 71.3  & 71.9  & 73.8  & 75.0  & 86.3  & 87.5  & 97.5  & 80.4  & 10.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Bio-Opt ($n{=}3$)}
+
+\begin{table}[h]
+\centering
+\caption{Bio-Opt per-run scores (motif F1, maximize). Baseline: 39.6.}
+\label{tab:bioopt_runs}
+\small
+\begin{tabular}{@{}lccc|cc@{}}
+\toprule
+\textbf{Config} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{Mean} & \textbf{Std} \\
+\midrule
+Full          & 42.8  & 54.0  & 52.9  & 49.9  & 6.2  \\
+No-Backtrack  & 39.9  & 44.4  & 51.7  & 45.3  & 6.0  \\
+Single-Agent  & 39.6  & 44.6  & 45.6  & 43.2  & 3.2  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Scheduler ($n{=}7$)}
+
+\begin{table}[h]
+\centering
+\caption{Scheduler per-run scores (weighted tardiness, minimize). Baseline: 213{,}837.}
+\label{tab:sched_runs}
+\small
+\begin{tabular}{@{}lccccccc|cc@{}}
+\toprule
+\textbf{Config} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{R4} & \textbf{R5} & \textbf{R6} & \textbf{R7} & \textbf{Mean} & \textbf{Std} \\
+\midrule
+Full          & 133K & 68K  & 92K  & 82K  & 79K  & 105K & 55K  & 88K  & 26K \\
+No-Backtrack  & 46K  & 88K  & 79K  & 97K  & 94K  & 125K & 66K  & 85K  & 25K \\
+Single-Agent  & 72K  & 93K  & 87K  & 105K & 82K  & 106K & 157K & 100K & 28K \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{TSP ($n{=}3$)}
+
+\begin{table}[h]
+\centering
+\caption{TSP per-run scores (tour distance, minimize). Baseline: 592.7.}
+\label{tab:tsp_runs}
+\small
+\begin{tabular}{@{}lccc|cc@{}}
+\toprule
+\textbf{Config} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{Mean} & \textbf{Std} \\
+\midrule
+Full          & 493.4 & 497.7 & 493.4 & 494.8 & 2.5  \\
+No-Backtrack  & 493.4 & 502.4 & 496.9 & 497.6 & 4.5  \\
+Single-Agent  & 496.1 & 495.4 & 495.4 & 495.6 & 0.5  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Round Scaling --- Game-AI ($n{=}3$)}
+
+\begin{table}[h]
+\centering
+\caption{Per-run scores for round scaling on Game-AI (full config).}
+\label{tab:rounds_runs}
+\small
+\begin{tabular}{@{}cccc|cc@{}}
+\toprule
+\textbf{Rounds} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{Mean} & \textbf{Std} \\
+\midrule
+2  & 71.3  & 58.8  & 73.1  & 67.7  & 7.8  \\
+4  & 86.3  & 100.0 & 70.0  & 85.4  & 15.0 \\
+8  & 87.5  & 100.0 & 86.3  & 91.3  & 7.6  \\
+12 & 100.0 & 93.8  & 100.0 & 97.9  & 3.6  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Backtrack Depth --- Game-AI ($n{=}3$)}
+
+\begin{table}[h]
+\centering
+\caption{Per-run scores for backtrack threshold $k$ on Game-AI (full config, 6 rounds).}
+\label{tab:depth_runs}
+\small
+\begin{tabular}{@{}cccc|ccc@{}}
+\toprule
+$k$ & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{Mean} & \textbf{Std} & \textbf{Backtracks} \\
+\midrule
+1 & 87.5  & 68.8  & 80.6  & 79.0  & 9.5  & 2, 3, 3 \\
+2 & 87.5  & 100.0 & 86.3  & 91.3  & 7.6  & 0, 1, 0 \\
+5 & 76.3  & 87.5  & 73.8  & 79.2  & 7.3  & 0, 0, 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Board Ablation ($n{=}3$)}
+
+\begin{table}[h]
+\centering
+\caption{Board ablation: full system vs.\ no-board (board summary disabled in prompts).}
+\label{tab:board_runs}
+\small
+\begin{tabular}{@{}llccc|cc@{}}
+\toprule
+\textbf{Task} & \textbf{Config} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{Mean} & \textbf{Std} \\
+\midrule
+\multirow{2}{*}{Game-AI}
+  & Full     & 75.0  & 100.0 & 100.0 & 91.7  & 14.4 \\
+  & No-Board & 86.3  & 100.0 & 84.4  & 90.2  & 8.5  \\
+\midrule
+\multirow{2}{*}{Bio-Opt}
+  & Full     & 42.8  & 54.0  & 52.9  & 49.9  & 6.2  \\
+  & No-Board & 64.3  & 61.9  & 41.8  & 56.0  & 12.4 \\
+\midrule
+\multirow{2}{*}{TSP}
+  & Full     & 493.4 & 497.7 & 493.4 & 494.8 & 2.5  \\
+  & No-Board & 493.4 & 493.4 & 497.7 & 494.8 & 2.5  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Parallel vs.\ Sequential --- Game-AI ($n{=}3$)}
+
+\begin{table}[h]
+\centering
+\caption{Parallel vs.\ sequential execution on Game-AI (full config, 6 rounds).}
+\label{tab:parallel_runs}
+\small
+\begin{tabular}{@{}lccc|ccc@{}}
+\toprule
+\textbf{Mode} & \textbf{R1} & \textbf{R2} & \textbf{R3} & \textbf{Mean} & \textbf{Std} & \textbf{Time (s)} \\
+\midrule
+Sequential & 86.3  & 85.0  & 73.8  & 81.7  & 6.9  & 1122 \\
+Parallel   & 87.5  & 75.0  & 81.9  & 81.5  & 6.3  & 429  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \end{document}
