@@ -14,23 +14,31 @@ try:
     from solver import solve
     route = solve(cities)
 except Exception as e:
-    print(f"SCORE: 99999")
+    print("SCORE: 99999", flush=True)
     sys.exit(0)
 
 elapsed = time.perf_counter() - start
 
 # Timeout penalty
 if elapsed > 25:
-    print(f"SCORE: 99999")
+    print("SCORE: 99999", flush=True)
     sys.exit(0)
 
 # Validate: must be a valid permutation of 0..N-1
-if sorted(route) != list(range(N)):
-    print(f"SCORE: 99999")
+try:
+    if sorted(route) != list(range(N)):
+        print("SCORE: 99999", flush=True)
+        sys.exit(0)
+except (TypeError, ValueError):
+    print("SCORE: 99999", flush=True)
     sys.exit(0)
 
 # Compute total distance
-from moves import route_distance
-total = route_distance(route, cities)
+try:
+    from moves import route_distance
+    total = route_distance(route, cities)
+except Exception:
+    print("SCORE: 99999", flush=True)
+    sys.exit(0)
 
-print(f"SCORE: {total:.2f}")
+print(f"SCORE: {total:.2f}", flush=True)

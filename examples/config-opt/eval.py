@@ -6,10 +6,15 @@ across multiple workload patterns.
 import importlib, random, sys
 
 sys.path.insert(0, "target")
-if "config" in sys.modules:
-    mod = importlib.reload(sys.modules["config"])
-else:
-    mod = importlib.import_module("config")
+try:
+    if "config" in sys.modules:
+        mod = importlib.reload(sys.modules["config"])
+    else:
+        mod = importlib.import_module("config")
+except Exception as e:
+    print(f"Import error: {e}", file=sys.stderr)
+    print("SCORE: 0", flush=True)
+    sys.exit(0)
 
 # Read config
 try:

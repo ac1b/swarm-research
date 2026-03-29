@@ -8,10 +8,15 @@ No stdlib compression modules allowed (zlib, gzip, bz2, lzma, etc).
 import importlib, sys, ast, random
 
 sys.path.insert(0, "target")
-if "compressor" in sys.modules:
-    mod = importlib.reload(sys.modules["compressor"])
-else:
-    mod = importlib.import_module("compressor")
+try:
+    if "compressor" in sys.modules:
+        mod = importlib.reload(sys.modules["compressor"])
+    else:
+        mod = importlib.import_module("compressor")
+except Exception as e:
+    print(f"Import error: {e}", file=sys.stderr)
+    print("SCORE: 0", flush=True)
+    sys.exit(0)
 
 # Check for banned imports
 try:

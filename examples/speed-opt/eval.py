@@ -68,11 +68,15 @@ def main():
         print("SCORE: 0.0", flush=True)
         return
 
-    if not check_correctness(mod):
+    try:
+        if not check_correctness(mod):
+            print("SCORE: 0.0", flush=True)
+            return
+        score = benchmark(mod)
+    except Exception as e:
+        print(f"Runtime error: {e}", file=sys.stderr)
         print("SCORE: 0.0", flush=True)
         return
-
-    score = benchmark(mod)
     print(f"SCORE: {score:.4f}", flush=True)
 
 

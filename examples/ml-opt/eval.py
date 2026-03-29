@@ -12,8 +12,11 @@ BANNED = {"numpy", "np", "scipy", "sklearn", "torch", "tensorflow", "tf",
 
 
 def check_banned_imports(filepath):
-    with open(filepath) as f:
-        tree = ast.parse(f.read())
+    try:
+        with open(filepath) as f:
+            tree = ast.parse(f.read())
+    except (SyntaxError, FileNotFoundError, OSError):
+        return None  # import error will be caught later
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:

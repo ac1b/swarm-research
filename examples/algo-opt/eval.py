@@ -6,10 +6,15 @@ Deterministic test cases with fixed seed.
 import importlib, math, random, sys
 
 sys.path.insert(0, "target")
-if "packer" in sys.modules:
-    mod = importlib.reload(sys.modules["packer"])
-else:
-    mod = importlib.import_module("packer")
+try:
+    if "packer" in sys.modules:
+        mod = importlib.reload(sys.modules["packer"])
+    else:
+        mod = importlib.import_module("packer")
+except Exception as e:
+    print(f"Import error: {e}", file=sys.stderr)
+    print("SCORE: 0", flush=True)
+    sys.exit(0)
 
 CAPACITY = 1.0
 
@@ -47,7 +52,11 @@ for items in cases:
         sys.exit(0)
 
     # Check: all items present
-    packed = sorted(round(x, 10) for b in bins for x in b)
+    try:
+        packed = sorted(round(x, 10) for b in bins for x in b)
+    except (TypeError, ValueError):
+        print("SCORE: 0", flush=True)
+        sys.exit(0)
     expected = sorted(round(x, 10) for x in items)
     if packed != expected:
         print("SCORE: 0", flush=True)
@@ -59,6 +68,9 @@ for items in cases:
             print("SCORE: 0", flush=True)
             sys.exit(0)
 
+    if not bins:
+        print("SCORE: 0", flush=True)
+        sys.exit(0)
     lower_bound = math.ceil(sum(items) / CAPACITY)
     ratio = lower_bound / len(bins)
     total_score += ratio

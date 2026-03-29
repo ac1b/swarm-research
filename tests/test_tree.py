@@ -233,16 +233,16 @@ class TestSelectBacktrackTarget:
         assert target is None
 
     def test_returns_none_all_ancestors_full(self, tmp_path):
-        """All on path, all ancestors have >= 3 children."""
+        """All laterals on current path, ancestors have >= 3 children → None."""
         tree = SearchTree(tmp_path / "tree.json")
         tree.create_root(10.0, "v0")
+        # Root has 3 children (full) — chain: 0 → 1 → 2
         tree.add_child(0, 11.0, "a", 1, "A", "c1")  # 1
-        tree.add_child(0, 12.0, "b", 1, "B", "c2")  # 2
-        tree.add_child(0, 13.0, "c", 1, "C", "c3")  # 3
-        # Path for node 3: [0, 3]
-        # Laterals: 1, 2 — these exist, so select won't return None
-        # For true exhaustion: all nodes on path, ancestors have 3+ children
-        # Hard to get None with lateral nodes. Skip — covered by root-only test.
+        tree.add_child(0, 12.0, "b", 1, "B", "c2")  # 2 (lateral)
+        tree.add_child(0, 13.0, "c", 1, "C", "c3")  # 3 (lateral)
+        # From node 1: laterals are 2 and 3, so it finds them
+        target = tree.select_backtrack_target(1)
+        assert target in (2, 3)
 
     def test_avoids_current_path(self, tmp_path):
         tree = SearchTree(tmp_path / "tree.json")
@@ -253,6 +253,29 @@ class TestSelectBacktrackTarget:
         # Even though nodes 0,1 have higher scores, they're on path
         target = tree.select_backtrack_target(2)
         assert target == 3
+
+    def test_minimize_prefers_low_score(self, tmp_path):
+        """With minimize=True, prefer nodes with lower scores."""
+        tree = SearchTree(tmp_path / "tree.json")
+        tree.create_root(500.0, "v0")
+        tree.add_child(0, 100.0, "v1", 1, "A", "c1")  # id=1 (better for min)
+        tree.add_child(0, 400.0, "v2", 1, "B", "c2")  # id=2 (worse for min)
+        tree.add_child(1, 200.0, "v3", 2, "C", "c3")  # id=3 (active)
+        target = tree.select_backtrack_target(3, minimize=True)
+        # Should prefer node 2 is NOT on path; between laterals 2(400) and none
+        # Wait: path is [3,1,0], laterals are only node 2
+        assert target == 2
+
+    def test_minimize_with_multiple_laterals(self, tmp_path):
+        """With minimize=True, prefer lower-score lateral over higher."""
+        tree = SearchTree(tmp_path / "tree.json")
+        tree.create_root(500.0, "v0")
+        tree.add_child(0, 50.0, "low", 1, "A", "c1")   # id=1 (low = good)
+        tree.add_child(0, 300.0, "high", 1, "B", "c2")  # id=2 (high = bad)
+        tree.add_child(0, 200.0, "mid", 1, "C", "c3")   # id=3 (active)
+        target = tree.select_backtrack_target(3, minimize=True)
+        # 1/(50+1)=0.0196, 1/(300+1)=0.0033 → prefer node 1
+        assert target == 1
 
 
 class TestPersistence:

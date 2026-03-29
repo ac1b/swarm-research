@@ -211,7 +211,7 @@ class SearchTree:
             if node.id in current_path:
                 continue
             penalty = 0.3 if node.abandoned else 1.0
-            raw = 1.0 / (node.score + 1) if minimize else node.score
+            raw = 1.0 / (abs(node.score) + 1) if minimize else node.score
             node_score = raw * (1 / (1 + node.visits)) * penalty
             candidates.append((node.id, node_score))
 
@@ -973,7 +973,7 @@ class SwarmEngine:
             print(f"    could not extract changes from response")
             return (Finding(
                 agent=agent.name, round=round_num, experiment=exp_num,
-                score=0, baseline=current_best, delta=0,
+                score=current_best, baseline=current_best, delta=0,
                 kept=False, reasoning=reasoning,
                 description=f"PARSE_FAIL: {reasoning[:100]}",
                 change_summary="(could not parse response)",
@@ -1005,7 +1005,7 @@ class SwarmEngine:
     def _crash_finding(self, agent, round_num, exp_num, reasoning, change_summary, current_best):
         return Finding(
             agent=agent.name, round=round_num, experiment=exp_num,
-            score=0, baseline=current_best, delta=0,
+            score=current_best, baseline=current_best, delta=0,
             kept=False, reasoning=reasoning,
             description=f"CRASH: {reasoning[:100]}",
             change_summary=change_summary,

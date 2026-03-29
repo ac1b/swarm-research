@@ -7,10 +7,15 @@ Score = avg(hamming_similarity to true motif) * 100.
 import importlib, random, sys
 
 sys.path.insert(0, "target")
-if "finder" in sys.modules:
-    mod = importlib.reload(sys.modules["finder"])
-else:
-    mod = importlib.import_module("finder")
+try:
+    if "finder" in sys.modules:
+        mod = importlib.reload(sys.modules["finder"])
+    else:
+        mod = importlib.import_module("finder")
+except Exception as e:
+    print(f"Import error: {e}", file=sys.stderr)
+    print("SCORE: 0", flush=True)
+    sys.exit(0)
 
 ALPHABET = "ACGT"
 

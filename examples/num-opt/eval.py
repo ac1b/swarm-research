@@ -6,10 +6,15 @@ Each integral has a known exact value. Budget: 100 function evaluations.
 import importlib, math, sys
 
 sys.path.insert(0, "target")
-if "integrator" in sys.modules:
-    mod = importlib.reload(sys.modules["integrator"])
-else:
-    mod = importlib.import_module("integrator")
+try:
+    if "integrator" in sys.modules:
+        mod = importlib.reload(sys.modules["integrator"])
+    else:
+        mod = importlib.import_module("integrator")
+except Exception as e:
+    print(f"Import error: {e}", file=sys.stderr)
+    print("SCORE: 0", flush=True)
+    sys.exit(0)
 
 N_POINTS = 100
 
