@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate figures for the SwarmOpt NeurIPS workshop paper."""
+"""Generate figures for the SwarmResearch NeurIPS workshop paper."""
 
 import matplotlib
 matplotlib.use("Agg")

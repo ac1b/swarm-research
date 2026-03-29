@@ -1104,7 +1104,7 @@ class SwarmEngine:
     def run(self):
         mode_label = "diff" if self.use_diff else "full-file"
         par_label = "parallel" if self.parallel else "sequential"
-        print(f"SwarmResearch Engine v0.6 [{mode_label}, {par_label}]")
+        print(f"SwarmResearch Engine v0.6.1 [{mode_label}, {par_label}]")
         print(f"  Task:      {self.task_path}")
         if len(self.target_files) == 1:
             print(f"  Target:    {self.target_files[0]}")
