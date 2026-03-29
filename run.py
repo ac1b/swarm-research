@@ -35,7 +35,7 @@ def main():
         sys.exit(1)
 
     engine = SwarmEngine(args.task)
-    if args.rounds:
+    if args.rounds is not None:
         engine.rounds = args.rounds
     if args.backtrack is not None:
         engine.backtrack = args.backtrack

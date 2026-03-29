@@ -1,8 +1,8 @@
 """
-SwarmResearch Engine v0.6
+SwarmResearch Engine v0.6.1
 
 Autonomous multi-agent optimization framework.
-v0.6: multi-file targets, backtracking/tree search, resume, phase-aware prompting.
+Multi-file targets, backtracking/tree search, resume, phase-aware prompting.
 """
 
 import json
